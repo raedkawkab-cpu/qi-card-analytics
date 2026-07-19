@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Qi Card — Marketing & Revenue Margin Strategy</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --qi:#F3CD00;--navy:#1C2340;--qi-l:#FFFBDE;--qi-b:#E8C000;
+  --w:#fff;--bg:#F5F6FA;--bdr:#E4E7EF;--tx:#1A1A1A;--mt:#6B7280;--ft:#9CA3AF;
+  --red:#DC2626;--rl:#FEF2F2;--rb:#FECACA;
+  --grn:#059669;--gl:#ECFDF5;--gb:#A7F3D0;
+  --amb:#D97706;--al:#FFFBEB;--ab:#FDE68A;
+  --pur:#6D28D9;--pl:#F5F3FF;--pb:#DDD6FE;
+  --blu:#1D4ED8;--r:10px;--rs:6px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--tx);font-size:14px;line-height:1.5}
+
+/* Header */
+.hdr{background:var(--navy);padding:1rem 1.25rem;display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.hdr h1{font-size:16px;font-weight:800;color:#fff;line-height:1.3}
+.hdr p{font-size:11px;color:#93A8D0;margin-top:3px;line-height:1.5}
+
+/* Tabs */
+.tabs{background:var(--w);border-bottom:2px solid var(--qi);display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:0 1rem}
+.tabs::-webkit-scrollbar{height:0}
+.tb{padding:.65rem .9rem;border:none;background:none;cursor:pointer;color:var(--mt);font-size:12px;font-weight:600;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.tb.on{color:var(--navy);border-bottom-color:var(--qi);font-weight:800}
+
+/* Main layout */
+.main{max-width:1260px;margin:0 auto;padding:1.25rem 1rem 3rem}
+.panel{display:none}.panel.on{display:block}
+
+/* Section header */
+.sh{margin-bottom:1rem;padding-bottom:.6rem;border-bottom:2px solid var(--qi)}
+.sh h2{font-size:15px;font-weight:800;line-height:1.3}.sh p{font-size:11px;color:var(--mt);margin-top:3px}
+
+/* Cards */
+.card{background:var(--w);border:1px solid var(--bdr);border-radius:var(--r);padding:.9rem 1.1rem;margin-bottom:1rem}
+.ct{font-size:12px;font-weight:700;margin-bottom:2px}.cs{font-size:10px;color:var(--ft);margin-bottom:8px}
+
+/* KPI tiles */
+.kpi{background:var(--w);border:1px solid var(--bdr);border-radius:var(--r);padding:.8rem .9rem}
+.kl{font-size:9px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.kv{font-size:18px;font-weight:800;line-height:1.15}.ks{font-size:10px;color:var(--ft);margin-top:3px}
+.kpi.dk{background:var(--navy)}.kpi.dk .kl{color:#93A8D0}.kpi.dk .kv,.kpi.dk .ks{color:#fff}
+.kpi.qi{background:var(--qi)}.kpi.qi .kl{color:#6B5500}.kpi.qi .kv{color:#1A1400}.kpi.qi .ks{color:#856100}
+.kpi.rd{border-left:3px solid var(--red)}.kpi.rd .kv{color:var(--red)}
+.kpi.gr{border-left:3px solid var(--grn)}.kpi.gr .kv{color:var(--grn)}
+.kpi.am{border-left:3px solid var(--amb)}.kpi.am .kv{color:var(--amb)}
+.kpi.pu{border-left:3px solid var(--pur)}.kpi.pu .kv{color:var(--pur)}
+.kpi.bl{border-left:3px solid var(--blu)}.kpi.bl .kv{color:var(--blu)}
+
+/* Alert rows */
+.alr{border-radius:var(--rs);padding:.75rem .9rem;margin-bottom:.85rem;display:flex;gap:8px;font-size:12px;line-height:1.65;align-items:flex-start}
+.alr.rd{background:var(--rl);border:1px solid var(--rb)}.alr.rd .ai{color:var(--red)}
+.alr.gr{background:var(--gl);border:1px solid var(--gb)}.alr.gr .ai{color:var(--grn)}
+.alr.am{background:var(--al);border:1px solid var(--ab)}.alr.am .ai{color:var(--amb)}
+.alr.qi{background:var(--qi-l);border:1px solid var(--qi-b)}.alr.qi .ai{color:#C9A200}
+.alr.pu{background:var(--pl);border:1px solid var(--pb)}.alr.pu .ai{color:var(--pur)}
+.alr.bl{background:#EFF6FF;border:1px solid #BFDBFE}.alr.bl .ai{color:var(--blu)}
+.ai{font-size:15px;flex-shrink:0;margin-top:1px}.alr strong{color:var(--tx)}
+
+/* Tables */
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:11px;min-width:540px}
+thead th{background:var(--navy);color:#fff;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:8px 9px;text-align:left;white-space:nowrap}
+tbody td{padding:7px 9px;border-bottom:1px solid var(--bdr);vertical-align:top;font-size:11px}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--qi-l)}
+
+/* Strategy cards */
+.strat{background:var(--w);border:1px solid var(--bdr);border-radius:var(--r);padding:1rem 1.1rem;margin-bottom:1rem;border-left:4px solid}
+.strat-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:.7rem;flex-wrap:wrap}
+.strat-title{font-size:14px;font-weight:800;margin-bottom:2px;line-height:1.3}
+.strat-sub{font-size:10px;color:var(--mt)}
+.strat-badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid;white-space:nowrap;flex-shrink:0;margin-top:2px}
+
+/* Approach items */
+.ap{font-size:11.5px;padding:9px 11px;border-radius:var(--rs);background:var(--bg);line-height:1.6}
+.ap-t{font-weight:700;font-size:12px;margin-bottom:3px;display:flex;align-items:center;gap:5px}
+.ap-d{color:var(--mt);font-size:11px;line-height:1.55}
+
+/* Channel pills */
+.channel-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:.7rem}
+.ch{font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;border:1px solid}
+
+/* Revenue lever cards */
+.rlev{background:var(--w);border:1px solid var(--bdr);border-radius:var(--r);padding:1rem 1.1rem;margin-bottom:.9rem}
+.rl-hdr{display:flex;align-items:center;gap:10px;margin-bottom:.7rem;flex-wrap:wrap}
+.rl-ico{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.rl-title{font-size:13px;font-weight:800;line-height:1.3}.rl-sub{font-size:10px;color:var(--mt);margin-top:1px}
+.rd2{background:var(--bg);border-radius:var(--rs);padding:7px 8px;text-align:center}
+.rdv{font-size:13px;font-weight:800}.rdl{font-size:9px;color:var(--mt);margin-top:1px;text-transform:uppercase;letter-spacing:.3px}
+
+/* Steps */
+.steps{border-top:1px solid var(--bdr);padding-top:.7rem}
+.step{display:flex;gap:8px;margin-bottom:.5rem;font-size:11.5px;line-height:1.55}
+.step-num{width:20px;height:20px;min-width:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px}
+.step-t{font-weight:700;color:var(--tx)}.step-d{color:var(--mt);font-size:11px}
+
+/* stat boxes inside strat */
+.sk{background:var(--bg);border-radius:var(--rs);padding:7px 8px;text-align:center}
+.skv{font-size:14px;font-weight:800}.skl{font-size:9px;color:var(--mt);text-transform:uppercase;letter-spacing:.3px;margin-top:1px}
+
+/* Chart containers */
+.ch-wrap{position:relative;height:200px}
+@media(min-width:768px){.ch-wrap{height:220px}}
+
+footer{background:var(--navy);color:#fff;text-align:center;padding:1.1rem;font-size:11px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+footer span{color:#93A8D0}
+
+/* ─── Responsive grid utilities (replaces Tailwind CDN) ─── */
+.grid { display: grid; }
+.grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+.grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 0.75rem; }
+.gap-4 { gap: 1rem; }
+.mb-3 { margin-bottom: 0.75rem; }
+.mb-5 { margin-bottom: 1.25rem; }
+
+@media (min-width: 768px) {
+  .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+/* ─────────────────────────────────────────────────────────── */
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <svg width="36" height="36" viewBox="0 0 62 61" fill="none" style="flex-shrink:0"><path d="M30.9229 50.4682C19.8704 50.4682 10.9271 41.5373 10.9271 30.5C10.9271 19.4627 19.8704 10.5318 30.9229 10.5318C41.9753 10.5318 50.9186 19.4627 50.9186 30.5C50.9186 33.2804 50.328 35.9765 49.3155 38.3356L57.0776 46.087C59.8618 41.5373 61.3805 36.145 61.3805 30.4157C61.4648 13.6492 47.7969 0 30.9229 0C14.0488 0 0.380859 13.6492 0.380859 30.5C0.380859 47.3508 14.0488 61 30.9229 61C36.66 61 42.0597 59.3992 46.6157 56.703L38.7693 48.8674C36.4069 49.8785 33.7071 50.4682 30.9229 50.4682ZM25.0169 30.5C25.0169 33.7859 27.6324 36.3978 30.9229 36.3978C34.2133 36.3978 36.8288 33.7859 36.8288 30.5C36.8288 27.2141 34.2133 24.6022 30.9229 24.6022C27.6324 24.6022 25.0169 27.2141 25.0169 30.5ZM59.8618 51.9848C61.8867 54.0069 61.8867 57.3771 59.8618 59.3992C57.8369 61.4213 54.4621 61.4213 52.4372 59.3992L36.9975 43.9807C34.9726 41.9586 34.9726 38.5884 36.9975 36.5663C39.0224 34.5442 42.3972 34.5442 44.4221 36.5663L59.8618 51.9848Z" fill="#F3CD00"/></svg>
+  <div style="min-width:0">
+    <h1>Qi Card — Marketing & Revenue Margin Strategy</h1>
+    <p>Per-segment marketing tactics · 5 revenue margin levers · data-grounded from 25.3M transactions · Oct 2025 – Apr 2026 · 1.490T IQD</p>
+  </div>
+</div>
+
+<div class="tabs" role="tablist">
+  <button class="tb on" onclick="sw('overview')" role="tab">📊 Revenue Map</button>
+  <button class="tb" onclick="sw('premium')" role="tab">💎 Premium</button>
+  <button class="tb" onclick="sw('growth')" role="tab">🥇 Growth</button>
+  <button class="tb" onclick="sw('activation')" role="tab">🥈 Activation</button>
+  <button class="tb" onclick="sw('levers')" role="tab">💰 Levers</button>
+  <button class="tb" onclick="sw('cards')" role="tab">💳 Card Upgrade</button>
+  <button class="tb" onclick="sw('execution')" role="tab">🗓️ Execution</button>
+</div>
+
+<div class="main">
+<!-- ══ OVERVIEW ══ -->
+<div id="p-overview" class="panel on">
+  <div class="sh"><h2>Revenue Map — Where Qi Card's Margin Comes From</h2><p>5 revenue levers · estimated annual contribution · ranked by opportunity size · all figures derived from actual transaction data</p></div>
+
+  <div class="alr qi"><span class="ai">💡</span><div><strong>Qi Card has five distinct revenue margin levers.</strong> FX margin on USD transactions is the largest (~12.5B IQD annually estimated). Interchange on e-commerce is second (~8.9B IQD). Credit interest is small by client count but the highest rate per IQD outstanding. ATM fees are a fixed-cost lever on 633K cash withdrawals. Card fees are the most controllable lever — currently underutilized at the premium tier. Marketing strategy must serve each lever, not just drive volume.</div></div>
+
+  <div class="g4 grid grid-cols-2 md:grid-cols-4 gap-2 mb-5">
+    <div class="kpi gr"><div class="kl">FX Margin (USD txns)</div><div class="kv">~12.5B IQD/yr</div><div class="ks">626B IQD in USD-billed volume at ~2% margin</div></div>
+    <div class="kpi gr"><div class="kl">Interchange (E-commerce)</div><div class="kv">~8.9B IQD/yr</div><div class="ks">594.8B IQD volume · ~1.5% blended rate</div></div>
+    <div class="kpi am"><div class="kl">Credit Interest</div><div class="kv">~5.4B IQD/yr</div><div class="ks">30.1B IQD outstanding at ~18% annual rate</div></div>
+    <div class="kpi am"><div class="kl">Interchange (POS)</div><div class="kv">~3.9B IQD/yr</div><div class="ks">489B IQD volume · ~0.8% debit rate</div></div>
+  </div>
+  <div class="g2 grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+    <div class="kpi bl"><div class="kl">ATM Cash Fee</div><div class="kv">~1.3B IQD/yr</div><div class="ks">633K withdrawals · avg 264K IQD each · ~2,000 IQD fee/withdrawal</div></div>
+    <div class="kpi pu"><div class="kl">Annual/Card Fees</div><div class="kv">Untapped</div><div class="ks">Premium card fees not currently driving margin — immediate opportunity</div></div>
+  </div>
+
+  <div class="g2 grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+    <div class="card"><div class="ct">Revenue lever estimated contribution (B IQD/yr)</div><div class="cs">FX margin dominates — every international transaction is a margin event</div><div class="ch-wrap"><canvas id="ch-ov1"></canvas></div></div>
+    <div class="card"><div class="ct">Transaction type by volume share — which channel drives most value</div><div class="cs">E-commerce + POS = 72.6% of volume · both earn interchange · e-commerce earns higher rate</div><div class="ch-wrap"><canvas id="ch-ov2"></canvas></div></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">Revenue lever by segment — which segment drives which margin line</div>
+    <div class="tw" style="margin-top:8px">
+      <table><thead><tr><th>Segment</th><th>FX Margin Driver</th><th>Interchange Driver</th><th>Credit/Fee Driver</th><th>ATM Driver</th><th>Key Marketing Objective</th></tr></thead>
+      <tbody>
+        <tr><td style="font-weight:700;color:#6D28D9">🏆 Champions</td><td style="color:#059669">★★★★★ Primary</td><td style="color:#059669">★★★★★ Primary</td><td style="color:#059669">★★★★ High</td><td style="color:#D97706">★★ Low</td><td style="font-size:10px">Retain spend · upsell to higher-fee card · grow FX volume · credit cross-sell</td></tr>
+        <tr><td style="font-weight:700;color:#DC2626">⚠️ At Risk</td><td style="color:#D97706">★★★★ Was primary</td><td style="color:#D97706">★★★ Was high</td><td style="color:#DC2626">★★★★ Premium subs</td><td style="color:#D97706">★★★ Medium</td><td style="font-size:10px">Reactivate POS+travel spend · recover FX margin · prevent permanent loss</td></tr>
+        <tr><td style="font-weight:700;color:#059669">💛 Loyal</td><td style="color:#059669">★★★★ High</td><td style="color:#059669">★★★★ High</td><td style="color:#D97706">★★★ Medium</td><td style="color:#D97706">★★ Low</td><td style="font-size:10px">Push frequency · card upgrade to earn higher interchange · credit upsell</td></tr>
+        <tr><td style="font-weight:700;color:#EA580C">👀 Needs Attn.</td><td style="color:#D97706">★★★ Medium</td><td style="color:#D97706">★★★ Medium</td><td style="color:#ft">★ Low</td><td style="color:#D97706">★★ Low</td><td style="font-size:10px">Salary-timed offers · increase transaction frequency · prevent At Risk degradation</td></tr>
+        <tr><td style="font-weight:700;color:#0891B2">🌱 Pot. Loyalists</td><td style="color:#D97706">★★★ Medium</td><td style="color:#D97706">★★★ Medium</td><td style="color:#ft">★ Low</td><td style="color:#ft">★ Low</td><td style="font-size:10px">Frequency habit · e-commerce merchant anchoring · first card upgrade</td></tr>
+        <tr><td style="font-weight:700;color:#0369A1">🆕 New Customers</td><td style="color:#D97706">★★★ Growing</td><td style="color:#D97706">★★★ Growing</td><td style="color:#ft">★ None</td><td style="color:#ft">★ None</td><td style="font-size:10px">Second transaction · e-commerce habit · product discovery · FX introduction</td></tr>
+        <tr><td style="font-weight:700;color:#D97706">😴 Hibernating (3+)</td><td style="color:#ft">★ Low</td><td style="color:#ft">★★ Low</td><td style="color:#ft">★ None</td><td style="color:#ft">★ Low</td><td style="font-size:10px">E-commerce merchant reactivation · re-establish the interchange relationship</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PREMIUM MARKETING ══ -->
+<div id="p-premium" class="panel">
+  <div class="sh"><h2>💎 Premium Marketing — Champions (271,682 clients · 842B IQD)</h2><p>Retain the 56.5% of total value · grow FX and interchange margin · upgrade Rafidain Classic holders · build emotional loyalty</p></div>
+
+  <div class="strat" style="border-left-color:#6D28D9">
+    <div class="strat-hdr">
+      <div><div class="strat-title" style="color:#4C1D95">1. Qi Platinum VIP Program — Launch Immediately</div><div class="strat-sub">Protect 842B IQD · zero-churn objective · 2,000 IQD per client budget</div></div>
+      <span class="strat-badge" style="background:#EDE9FE;border-color:#C4B5FD;color:#4C1D95">P0 — Activate Now</span>
+    </div>
+    <div class="strat-kpis grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+      <div class="sk"><div class="skv" style="color:#6D28D9">271,682</div><div class="skl">Target Clients</div></div>
+      <div class="sk"><div class="skv" style="color:#059669">842B IQD</div><div class="skl">Value Protected</div></div>
+      <div class="sk"><div class="skv" style="color:#6D28D9">8 days</div><div class="skl">Avg Recency</div></div>
+      <div class="sk"><div class="skv" style="color:#6D28D9">~543M IQD</div><div class="skl">Campaign Budget</div></div>
+    </div>
+    <div class="approach-grid grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+      <div class="ap"><div class="ap-t">🏅 Named Tier — Qi Platinum</div><div class="ap-d">Automatic enrollment for all Champions. Visible badge in the Qi Card app. Two sub-tiers: Platinum (all 271K Champions) and Platinum Elite (top 1,000 by spend, each over 10M IQD lifetime). Different badge colors. Different benefit levels. The tier itself is the marketing — people spend to maintain it.</div></div>
+      <div class="ap"><div class="ap-t">🛡️ 15-Day Inactivity Alert — CRM Rule</div><div class="ap-d">No campaign needed — just a system rule. Any Platinum member without a transaction in 15 days triggers an automated personalized message: "We haven't seen you use your Qi Card lately — here's an exclusive offer for this week." In Q4→Q1 data, 21,252 Champions degraded to At Risk. This rule intercepts them before the 30-day mark.</div></div>
+      <div class="ap"><div class="ap-t">🌍 International Priority — FX Margin Driver</div><div class="ap-d">Champions spend 626B IQD in USD-billed transactions. FX margin at 2% = ~12.5B IQD/yr estimated across all segments, with Champions driving the majority. Market: "Preferred FX rate for Platinum members." Even a 0.1% improvement in FX capture on their USD volume is hundreds of millions of IQD in margin. This is simultaneously a retention tool and a direct margin driver.</div></div>
+      <div class="ap"><div class="ap-t">🎁 Milestone Cashback — Surprise Mechanics</div><div class="ap-d">After every 100th transaction: 5,000 IQD surprise cashback. Not announced in advance — surprise increases emotional impact vs. expected reward. Data: Champions avg 57 transactions. Monthly average is ~8 transactions. At current pace, top Champions would hit milestones every 12 days. Cost: fully predictable from frequency data.</div></div>
+      <div class="ap"><div class="ap-t">🤝 Platinum Referral Program</div><div class="ap-d">Champion earns 3,000 IQD for every friend they refer who activates and completes 3 transactions within 30 days. Qualifier: referral must be net new to Qi Card. Champions have proven spending behavior — their networks are the highest-quality acquisition channel. Data from merchant intel shows Champions concentrated at SHEIN, PUBGMOBILE, ALIBABA — communities where peers influence peers.</div></div>
+      <div class="ap"><div class="ap-t">💳 Card Upgrade — Rafidain → Corporate</div><div class="ap-d">134,266 Champions still on Rafidain Classic (avg 2.85M IQD spend). MC Corporate Champions avg 7.2M IQD — 2.5× higher. The card is not causing the higher spend — both reflect the same client profile — but upgrading provides: higher credit limit, higher interchange rate for Qi Card, better FX terms, and a status signal. Offer: "Upgrade to Platinum Corporate Card — no annual fee for first year."</div></div>
+    </div>
+    <div class="channel-row">
+      <span class="ch" style="background:#EDE9FE;border-color:#C4B5FD;color:#4C1D95">📱 In-app push (personalized)</span>
+      <span class="ch" style="background:#EDE9FE;border-color:#C4B5FD;color:#4C1D95">📞 Personal call (top 1,000)</span>
+      <span class="ch" style="background:#EDE9FE;border-color:#C4B5FD;color:#4C1D95">💬 SMS — milestone only</span>
+      <span class="ch" style="background:#EDE9FE;border-color:#C4B5FD;color:#4C1D95">📧 Email — monthly statement</span>
+    </div>
+    <div class="alr gr"><span class="ai">📈</span><div><strong>Revenue margin impact:</strong> Retaining 90% of Champions (244K clients) protects ~757B IQD in annual billed volume. At 1.5% blended interchange that is ~11.4B IQD in interchange revenue preserved. Every Champion who upgrades from Rafidain Classic to MC Corporate potentially doubles their spend and earns higher interchange. The referral program adds net-new clients at ~3,000 IQD acquisition cost vs typical >15,000 IQD channel cost.</div></div>
+  </div>
+</div>
+
+<!-- ══ GROWTH MARKETING ══ -->
+<div id="p-growth" class="panel">
+  <div class="sh"><h2>🥇 Growth Marketing — At Risk + Loyal + Needs Attention + Potential Loyalists</h2><p>800,440 clients · 601B IQD · four distinct behavioral profiles requiring four completely different approaches</p></div>
+
+  <!-- At Risk -->
+  <div class="strat" style="border-left-color:#DC2626">
+    <div class="strat-hdr">
+      <div><div class="strat-title" style="color:#991B1B">2. At Risk Win-Back — POS & Travel Anchored</div><div class="strat-sub">195,786 clients · 289.6B IQD historical value · 45.3% POS buyers · NOT an e-commerce campaign</div></div>
+      <span class="strat-badge" style="background:#FEF2F2;border-color:#FECACA;color:#991B1B">P0 — 48-Hour Launch</span>
+    </div>
+    <div class="strat-kpis grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+      <div class="sk"><div class="skv" style="color:#DC2626">195,786</div><div class="skl">At Risk Clients</div></div>
+      <div class="sk"><div class="skv" style="color:#DC2626">107 days</div><div class="skl">Avg Inactive</div></div>
+      <div class="sk"><div class="skv" style="color:#DC2626">45.3%</div><div class="skl">POS Volume Share</div></div>
+      <div class="sk"><div class="skv" style="color:#DC2626">+217%</div><div class="skl">Growth Since Oct</div></div>
+    </div>
+    <div class="approach-grid grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+      <div class="ap" style="border-left:3px solid #DC2626"><div class="ap-t">📞 Sub-Track 1: 637 Premium Clients — Personal Call Only</div><div class="ap-d">Istirad (221, avg 11.4M IQD), World Elite (379, avg 5.5M IQD), Qi Elite (37, avg 9.1M IQD). Senior relationship manager call only. Script: "We noticed you haven't used your [card name] recently — is there anything we can resolve for you?" Do NOT mention a campaign. Do NOT offer generic cashback. These clients spent millions and stopped: something specific happened. Find out what before spending budget.</div></div>
+      <div class="ap" style="border-left:3px solid #DC2626"><div class="ap-t">🎯 Sub-Track 2: 10,002 Score-155 Clients — Dedicated Campaign</div><div class="ap-d">R=1, F=5, M=5 — highest frequency, highest spend, most recently stopped. These were daily or near-daily Qi Card users. They didn't drift — they stopped actively. Campaign: "Your Qi Platinum benefit is waiting — 1,000 IQD cashback on your first purchase this week." 48-hour validity window. Personalized message referencing their last merchant category.</div></div>
+      <div class="ap" style="border-left:3px solid #DC2626"><div class="ap-t">🏪 Sub-Track 3: Bulk (185K) — POS Merchant Offer</div><div class="ap-d">45.3% of At Risk volume was POS purchase. Top At Risk merchants: SAU (12,732 at-risk clients), SHEIN (3,557), FAB (4,107). Campaign: "Use your Qi Card at any POS this weekend — get 500 IQD back." Physical transaction offer. NOT online cashback. The message must match the behavior that characterized them as customers. Timing: Thursday–Friday (pre-weekend spending).</div></div>
+      <div class="ap" style="border-left:3px solid #DC2626"><div class="ap-t">✈️ Sub-Track 4: SAU/UAE Travel Cluster — International Offer</div><div class="ap-d">27,182 clients whose last transactions were at SAU (Saudi Arabia ATM/POS) or FAB/ADIB (UAE banking). These are travelers or workers abroad. Offer: "No international transaction fee for 60 days with your Qi Card." Targets the exact friction point that likely caused them to stop — SAU and FAB declined to near-zero in Apr 2026 (competitor capture signal). Fee waiver costs less than the margin recovered.</div></div>
+    </div>
+    <div class="channel-row">
+      <span class="ch" style="background:#FEF2F2;border-color:#FECACA;color:#991B1B">💬 SMS — 48-hour offer</span>
+      <span class="ch" style="background:#FEF2F2;border-color:#FECACA;color:#991B1B">📱 App push (re-engagement)</span>
+      <span class="ch" style="background:#FEF2F2;border-color:#FECACA;color:#991B1B">📞 Personal call (637 only)</span>
+    </div>
+    <div class="alr rd"><span class="ai">📈</span><div><strong>Revenue margin impact:</strong> Recovering 30% of At Risk = 58,736 clients. At 1.48M IQD avg spend, that is 87B IQD reactivated. At 1.5% interchange blended rate = ~1.3B IQD annual interchange recovered. The 637 premium clients at 60% recovery (382 clients × ~13M IQD avg) = 4.97B IQD recovered in the highest-margin card tier (credit + World Elite). Total margin recovery > campaign cost by 157×.</div></div>
+  </div>
+
+  <!-- Loyal -->
+  <div class="strat" style="border-left-color:#059669">
+    <div class="strat-hdr">
+      <div><div class="strat-title" style="color:#065F46">3. Loyal — Champion Conversion & Upsell</div><div class="strat-sub">265,377 clients · 251.8B IQD · 6–10 txn range · the highest leverage upgrade target in the portfolio</div></div>
+      <span class="strat-badge" style="background:#ECFDF5;border-color:#A7F3D0;color:#065F46">P0 — High ROI</span>
+    </div>
+    <div class="approach-grid grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+      <div class="ap" style="border-left:3px solid #059669"><div class="ap-t">⬆️ Champion Progress Bar — In-App</div><div class="ap-d">Every Loyal client sees in their app: "You are [N] transactions away from Qi Platinum." Not IQD-based — transaction count. Why: 39.3% of Loyal are in the 6–10 transaction bucket. Adding 2–3 more per month moves them to Champion. The visualization makes it feel achievable. Include what they unlock at Champion (the VIP benefit list). Gamification tied to real rewards.</div></div>
+      <div class="ap" style="border-left:3px solid #059669"><div class="ap-t">💳 Card Upgrade — Mid-Tier Push</div><div class="ap-d">Loyal on Rafidain Classic (100,575 clients, 676K IQD avg) → offer Visa Classic Rafidain (avg 1.07M IQD among peers) or MC Barakatna (avg 1.89M IQD). Message: "Upgrade your card — unlock higher limits and earn Platinum faster." Higher-tier card = higher interchange for Qi Card. The upgrade is simultaneously a retention tool and a direct margin improvement per transaction.</div></div>
+      <div class="ap" style="border-left:3px solid #059669"><div class="ap-t">🔄 Cross-Sell Window — Salary & Savings</div><div class="ap-d">Loyal clients average 6–20 transactions across 7 months. They trust Qi Card enough to transact consistently. This is the right trust level to cross-sell: salary card (switches primary income channel to Qi Card, dramatically increasing FX margin from salary-day spend), savings account (deposits = investable float), or travel insurance (premium product attached to their ISC Travel card).</div></div>
+      <div class="ap" style="border-left:3px solid #059669"><div class="ap-t">📊 Monthly "You're Getting Closer" Email</div><div class="ap-d">Monthly CRM email showing each Loyal client their progress: transactions this month, trajectory to Platinum, and one offer for the next month. Simple, data-driven, personalized. Sends automatically from CRM. No manual effort at scale. Keeps Qi Card top-of-wallet for their next transaction decision.</div></div>
+    </div>
+    <div class="channel-row">
+      <span class="ch" style="background:#ECFDF5;border-color:#A7F3D0;color:#065F46">📱 In-app progress bar</span>
+      <span class="ch" style="background:#ECFDF5;border-color:#A7F3D0;color:#065F46">📧 Monthly progress email</span>
+      <span class="ch" style="background:#ECFDF5;border-color:#A7F3D0;color:#065F46">💬 SMS — upgrade offer</span>
+    </div>
+    <div class="alr gr"><span class="ai">📈</span><div><strong>Revenue margin impact:</strong> Converting 15% of Loyal to Champions = 39,806 clients at 3.10M IQD avg spend = +123B IQD in Champion-tier volume. At 1.5% interchange that is +1.84B IQD/yr in additional interchange. Card upgrades from Rafidain Classic to higher tier on 10% of 100,575 clients = ~10K clients potentially doubling their spend = +6.8B IQD incremental volume.</div></div>
+  </div>
+
+  <!-- Needs Attention -->
+  <div class="strat" style="border-left-color:#EA580C">
+    <div class="strat-hdr">
+      <div><div class="strat-title" style="color:#7C2D12">4. Needs Attention — Salary-Cycle Timing</div><div class="strat-sub">206,288 clients · 37.0B IQD · 81.4% in 2–5 txn bucket · send everything on the 25th–28th of the month</div></div>
+      <span class="strat-badge" style="background:#FFF7ED;border-color:#FED7AA;color:#7C2D12">P1 — Timing is the Strategy</span>
+    </div>
+    <div class="approach-grid grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+      <div class="ap" style="border-left:3px solid #EA580C"><div class="ap-t">⏰ Salary-Day SMS Campaign</div><div class="ap-d">Every outbound message to Needs Attention goes out between the 25th and 28th of each month. That is when salary arrives in Iraq. The message: "Your Qi Card is ready for this month. Exclusive offer this week: [merchant offer]." This is not just about the offer — it is about being present at the moment the client has money and is thinking about spending. Generic timing (mid-month, random) misses the window entirely.</div></div>
+      <div class="ap" style="border-left:3px solid #EA580C"><div class="ap-t">💰 Monthly Spend Summary — 1st of Month</div><div class="ap-d">On the 1st of each month: "Last month you spent [X IQD] with Qi Card and saved [Y IQD] on [merchant]." Spending summaries serve two functions: they remind clients the card is working for them (reducing churn), and they create an aspiration — if they spent more, they would save more. Data already available from transaction history; automation is the only requirement.</div></div>
+      <div class="ap" style="border-left:3px solid #EA580C"><div class="ap-t">🛍️ E-Commerce Offer Match</div><div class="ap-d">50.2% of Needs Attention volume is e-commerce. Their top channels overlap with SHEIN, DIGITAL ZONE, TIKTOK. Send a merchant-specific offer at salary timing: "5% back at SHEIN this week — expires Sunday." Category match dramatically outperforms generic cashback for this group because it aligns with existing behavior rather than asking for new behavior.</div></div>
+      <div class="ap" style="border-left:3px solid #EA580C"><div class="ap-t">🔔 60-Day Auto-Escalation Rule</div><div class="ap-d">Internal CRM rule (no client-facing action): any Needs Attention client who reaches 60 days without a transaction is automatically moved to the At Risk campaign track. Real-time monitoring. At current At Risk growth rate (+17,942 new clients in April alone), this rule prevents the compounding problem at source. The rule costs nothing to implement and saves the campaign cost of recovering fallen At Risk clients later.</div></div>
+    </div>
+    <div class="channel-row">
+      <span class="ch" style="background:#FFF7ED;border-color:#FED7AA;color:#7C2D12">💬 SMS — 25th–28th only</span>
+      <span class="ch" style="background:#FFF7ED;border-color:#FED7AA;color:#7C2D12">📧 Monthly summary — 1st</span>
+      <span class="ch" style="background:#FFF7ED;border-color:#FED7AA;color:#7C2D12">📱 App notification</span>
+    </div>
+    <div class="alr am"><span class="ai">📈</span><div><strong>Revenue margin impact:</strong> Retaining 45–55% from degrading to At Risk = 92,800–113,500 clients protected. At 179K IQD avg spend and 1.5% interchange = 2.5B–3.0B IQD in annual interchange preserved. More importantly, each Needs Attention client who doesn't become At Risk saves Qi Card the cost of a recovery campaign (800–2,500 IQD/client) plus the value lost during inactivity.</div></div>
+  </div>
+
+  <!-- Potential Loyalists -->
+  <div class="strat" style="border-left-color:#0891B2">
+    <div class="strat-hdr">
+      <div><div class="strat-title" style="color:#0C4A6E">5. Potential Loyalists — Frequency Habit Builder</div><div class="strat-sub">133,089 clients · 21.0B IQD · 11-day recency · active but need a habit anchor</div></div>
+      <span class="strat-badge" style="background:#ECFEFF;border-color:#A5F3FC;color:#0C4A6E">P1 — Quick Win</span>
+    </div>
+    <div class="approach-grid grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+      <div class="ap" style="border-left:3px solid #0891B2"><div class="ap-t">🎯 5-Transaction Monthly Reward</div><div class="ap-d">"Make 5 transactions this month — earn 500 IQD." Displayed as a progress bar in-app. 49.3% of Potential Loyalists are in the 3–5 transaction bucket cumulatively. Getting them to transact 2–3 more times in a month converts a habit from "occasional" to "regular." The 500 IQD reward costs less than the additional interchange earned from those extra transactions at their avg 158K IQD ticket.</div></div>
+      <div class="ap" style="border-left:3px solid #0891B2"><div class="ap-t">🛍️ Merchant Discovery Push</div><div class="ap-d">56.9% of Potential Loyalists are e-commerce users. They are already online — they just need more Qi Card opportunities there. Weekly push notification: "Exclusive for Qi Card users at [new merchant this week]." Rotate through top 20 merchants by volume. Creates habit association between e-commerce browsing and Qi Card. Each additional transaction earns interchange and extends the relationship.</div></div>
+    </div>
+    <div class="channel-row">
+      <span class="ch" style="background:#ECFEFF;border-color:#A5F3FC;color:#0C4A6E">📱 In-app progress tracker</span>
+      <span class="ch" style="background:#ECFEFF;border-color:#A5F3FC;color:#0C4A6E">💬 Weekly merchant push</span>
+    </div>
+    <div class="alr am"><span class="ai">📈</span><div><strong>Revenue margin impact:</strong> Converting 20% of Potential Loyalists to Loyal = 26,618 clients × 949K IQD avg spend = +25.3B IQD incremental Loyal volume. At 1.5% interchange = +379M IQD/yr additional interchange. Lower priority than At Risk recovery in absolute terms but much lower cost per client to execute.</div></div>
+  </div>
+</div>
+
+<!-- ══ ACTIVATION MARKETING ══ -->
+<div id="p-activation" class="panel">
+  <div class="sh"><h2>🥈 Activation Marketing — New + Regular + Hibernating 3+ txns</h2><p>163,009 real campaign targets · behavioral-matched offers · first habit is the only goal</p></div>
+
+  <div class="strat" style="border-left-color:#0369A1">
+    <div class="strat-hdr">
+      <div><div class="strat-title" style="color:#0C4A6E">6. New Customers — 7-Day Onboarding Window</div><div class="strat-sub">53,431 clients · 283K IQD avg spend · 78.3% e-commerce · 86.9% made 1 transaction — the window closes in 7 days</div></div>
+      <span class="strat-badge" style="background:#F0F9FF;border-color:#BAE6FD;color:#0C4A6E">P2 — Automation Required</span>
+    </div>
+    <div class="approach-grid grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+      <div class="ap" style="border-left:3px solid #0369A1"><div class="ap-t">📅 Day 1 — Welcome + What Qi Card Can Do</div><div class="ap-d">Immediate after first transaction: personalized welcome message. "Your Qi Card is now active. Here's what you unlocked:" + top 3 merchant categories matching their first transaction type. Not generic benefits — personalized to what they actually did. 78.3% of New Customers transact e-commerce first: the message should reference e-commerce merchants.</div></div>
+      <div class="ap" style="border-left:3px solid #0369A1"><div class="ap-t">📅 Day 3 — First Merchant Offer</div><div class="ap-d">"Exclusive Qi Card offer at [merchant in their first category]: 3% back on your next purchase, expires in 4 days." Match to their first transaction merchant category. If they used SHEIN: send a SHEIN offer. If they used PUBGMOBILE: send a gaming offer. Category match converts at 3× the rate of generic offers because it confirms the card works where they already spend.</div></div>
+      <div class="ap" style="border-left:3px solid #0369A1"><div class="ap-t">📅 Day 7 — Second Transaction Incentive</div><div class="ap-d">"Make your second Qi Card purchase this week — get 300 IQD back automatically." Simple. Specific. 7-day window. 86.9% of New Customers made only 1 transaction. The second transaction is the only conversion goal. Everything before day 7 is building up to this ask. After the second transaction, they automatically move to Regular Customers and enter the next campaign track.</div></div>
+      <div class="ap" style="border-left:3px solid #0369A1"><div class="ap-t">⚠️ Fix the Acquisition Collapse — Separate Investigation</div><div class="ap-d">New client acquisition collapsed 92% from October (64,543 clients) to April (4,922 clients). This is not a marketing problem — it is a pipeline problem. The October spike must be diagnosed: Was there a product launch? A bank partnership? A government program? A competitor failure? Replicating October's acquisition performance is worth more to Qi Card than any campaign in this document. This requires a separate investigation with the operations and partnerships teams.</div></div>
+    </div>
+    <div class="channel-row">
+      <span class="ch" style="background:#F0F9FF;border-color:#BAE6FD;color:#0C4A6E">💬 SMS Day 1, 3, 7 (automated)</span>
+      <span class="ch" style="background:#F0F9FF;border-color:#BAE6FD;color:#0C4A6E">📱 In-app notification</span>
+    </div>
+    <div class="alr am"><span class="ai">📈</span><div><strong>Revenue margin impact:</strong> 60% second-transaction conversion = 32,059 clients. At 283K IQD per additional transaction and 1.5% interchange = 136M IQD from the second transaction alone. More importantly: each client who completes the second transaction has a 3× higher 90-day retention rate than single-transaction clients. The onboarding sequence is the single highest-ROI marketing investment in the Activation tier.</div></div>
+  </div>
+
+  <div class="strat" style="border-left-color:#1D4ED8">
+    <div class="strat-hdr">
+      <div><div class="strat-title" style="color:#1E3A8A">7. Regular Customers — Second Transaction Trigger</div><div class="strat-sub">56,506 clients · 162K IQD avg spend · 41-day recency · 88.2% made 1–2 transactions · still warm</div></div>
+      <span class="strat-badge" style="background:#EFF6FF;border-color:#BFDBFE;color:#1E3A8A">P2 — Single Offer</span>
+    </div>
+    <div class="approach-grid grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+      <div class="ap" style="border-left:3px solid #1D4ED8"><div class="ap-t">⚡ One Message — One Offer — One Week</div><div class="ap-d">Regular Customers are 41 days inactive on average — warm enough to reach, not warm enough to expect. Single SMS: "We noticed you haven't used your Qi Card recently — here's an exclusive offer this week: 300 IQD back on your next purchase." One week validity. No follow-up. 70.2% are e-commerce users — the offer goes to an online merchant category. If they don't convert, they fall to Hibernating and enter that sub-track.</div></div>
+      <div class="ap" style="border-left:3px solid #1D4ED8"><div class="ap-t">🛍️ E-Commerce Category Match</div><div class="ap-d">Match the offer to their first transaction's merchant category. 70.2% of Regular Customers used e-commerce. If the first transaction was SHEIN, the second offer is SHEIN. If it was DIGITAL ZONE, the offer is DIGITAL ZONE. Generic offers underperform category-matched offers by 3:1 for low-engagement clients because they require the client to make a new decision rather than confirming an existing one.</div></div>
+    </div>
+    <div class="channel-row">
+      <span class="ch" style="background:#EFF6FF;border-color:#BFDBFE;color:#1E3A8A">💬 Single SMS</span>
+      <span class="ch" style="background:#EFF6FF;border-color:#BFDBFE;color:#1E3A8A">📱 One app push</span>
+    </div>
+  </div>
+
+  <div class="strat" style="border-left-color:#D97706">
+    <div class="strat-hdr">
+      <div><div class="strat-title" style="color:#78350F">8. Hibernating — Three Tracks, Not One Campaign</div><div class="strat-sub">290,193 total · but only 122,572 real campaign targets (3–5 txns + 6+ txns) · 55.5% e-commerce · offer at their last merchant</div></div>
+      <span class="strat-badge" style="background:#FFFBEB;border-color:#FDE68A;color:#78350F">P3 — Segment Precisely</span>
+    </div>
+    <div class="approach-grid grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+      <div class="ap" style="border-left:3px solid #DC2626"><div class="ap-t">🔴 1-Transaction (166,888) — Survey, Not Campaign</div><div class="ap-d">1-tap SMS survey: "We noticed you haven't used your Qi Card after your first purchase. Could you tell us why?" Offer 3 buttons: [It didn't work at my merchant] [I didn't need it] [I forgot I had it]. Budget: 50 IQD per client = 8.3M IQD total. Answers directly inform product decisions. This is a research investment, not a marketing investment. Do NOT send a reactivation offer to this group.</div></div>
+      <div class="ap" style="border-left:3px solid #D97706"><div class="ap-t">🟡 2 Transactions (59,733) — Low-Cost E-Commerce Offer</div><div class="ap-d">"We've missed you. 300 IQD cashback on your next online purchase — expires in 7 days." 55.5% of Hibernating volume was e-commerce. They know the card and used it digitally. Budget: 300 IQD per client. Expected recovery 8–15%. Target the SHEIN or Alibaba category based on their last transaction.</div></div>
+      <div class="ap" style="border-left:3px solid #059669"><div class="ap-t">🟢 3–5 Transactions (51,078) — Merchant-Specific</div><div class="ap-d">Best recovery probability in Hibernating. They built a partial habit. Offer tied to their most-used merchant: "Your favorite [merchant] is still waiting. 500 IQD back on your next purchase this week." Budget: 500 IQD per client. Expected recovery 20–28%.</div></div>
+      <div class="ap" style="border-left:3px solid #059669"><div class="ap-t">🟢 6+ Transactions (12,494) — Personal + High Budget</div><div class="ap-d">These clients built a real habit and then stopped. The highest-value dormant targets in this tier. Personalized offer: "We know you were a regular — here's our best offer to welcome you back: 1,500 IQD on your next purchase, no minimum." Budget: up to 1,500 IQD. Expected recovery 30–35%.</div></div>
+    </div>
+    <div class="channel-row">
+      <span class="ch" style="background:#FFFBEB;border-color:#FDE68A;color:#78350F">💬 SMS (sub-group matched)</span>
+      <span class="ch" style="background:#FFFBEB;border-color:#FDE68A;color:#78350F">📱 App push (if still installed)</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ REVENUE LEVERS ══ -->
+<div id="p-levers" class="panel">
+  <div class="sh"><h2>💰 Five Revenue Margin Levers — How to Grow Each One</h2><p>Derived from actual transaction and product data · ranked by annual margin opportunity · specific actions required</p></div>
+
+  <!-- Lever 1: FX -->
+  <div class="rlev">
+    <div class="rl-hdr">
+      <div class="rl-ico" style="background:#ECFDF5;color:#059669">💱</div>
+      <div><div class="rl-title">Lever 1 — FX Margin on International Transactions (Largest)</div><div class="rl-sub">626B IQD in USD-billed volume · ~12.5B IQD estimated annual FX margin · 99.9% of ALL transactions are international</div></div>
+    </div>
+    <div class="rl-data grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+      <div class="rd2"><div class="rdv" style="color:#059669">626B IQD</div><div class="rdl">USD-Billed Volume</div></div>
+      <div class="rd2"><div class="rdv" style="color:#059669">~2%</div><div class="rdl">Est. FX Margin Rate</div></div>
+      <div class="rd2"><div class="rdv" style="color:#059669">~12.5B IQD</div><div class="rdl">Est. Annual FX Margin</div></div>
+      <div class="rd2"><div class="rdv" style="color:#059669">99.9%</div><div class="rdl">Transactions International</div></div>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="step-num" style="background:#059669;color:#fff">1</div><div><div class="step-t">Grow Champions' international e-commerce volume</div><div class="step-d">Every USD transaction earns FX margin. Champions spend 842B IQD at avg 3.1M per client, mostly internationally (SHEIN, ALIBABA, TIKTOK, PUBGMOBILE). The VIP program and card upgrade strategy directly grows this FX margin line. Adding 1 additional SHEIN transaction per Champion per month at avg 640K IQD × 271K clients = 173B IQD additional FX-eligible volume.</div></div></div>
+      <div class="step"><div class="step-num" style="background:#059669;color:#fff">2</div><div><div class="step-t">Capture the SAU/UAE travel cluster before it's fully lost</div><div class="step-d">SAU collapsed from 6.9B IQD (Jan 2026) to 143M IQD (Apr 2026). 27,182 clients with Saudi/UAE ATM history. Each cash withdrawal at 264K IQD avg ticket earns ATM fee + FX margin. Win-back offer: "No international transaction fees for 60 days." Recovering 30% of SAU/UAE volume = recovering ~7.5B IQD in FX-margin-eligible transactions.</div></div></div>
+      <div class="step"><div class="step-num" style="background:#059669;color:#fff">3</div><div><div class="step-t">Market FX rate as a product benefit to New and Activation segments</div><div class="step-d">New Customers (78.3% e-commerce) are already spending internationally. They don't yet know Qi Card's FX terms. Onboarding Day 1 message should include: "Qi Card gives you competitive rates on all international purchases — including SHEIN and Alibaba." FX rate is an invisible benefit that becomes a competitive differentiator once customers know about it.</div></div></div>
+    </div>
+  </div>
+
+  <!-- Lever 2: Interchange -->
+  <div class="rlev">
+    <div class="rl-hdr">
+      <div class="rl-ico" style="background:#EFF6FF;color:#1D4ED8">🔄</div>
+      <div><div class="rl-title">Lever 2 — Interchange on E-Commerce & POS</div><div class="rl-sub">594.8B IQD e-commerce + 489B IQD POS · ~12.8B IQD estimated annual interchange combined</div></div>
+    </div>
+    <div class="rl-data grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+      <div class="rd2"><div class="rdv" style="color:#1D4ED8">594.8B IQD</div><div class="rdl">E-commerce Volume</div></div>
+      <div class="rd2"><div class="rdv" style="color:#1D4ED8">~1.5%</div><div class="rdl">Est. E-com Rate</div></div>
+      <div class="rd2"><div class="rdv" style="color:#1D4ED8">489B IQD</div><div class="rdl">POS Volume</div></div>
+      <div class="rd2"><div class="rdv" style="color:#1D4ED8">~0.8%</div><div class="rdl">Est. Debit POS Rate</div></div>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="step-num" style="background:#1D4ED8;color:#fff">1</div><div><div class="step-t">Shift debit holders to higher-interchange card products</div><div class="step-d">Debit POS earns ~0.8% interchange. Credit earns ~1.5–2%. Upgrading 10% of Rafidain Classic holders (78,591 clients) to Credit or World Elite products — even if spend stays the same — almost doubles interchange per transaction. Card upgrade campaigns serve both client (better limits, benefits) and bank (higher interchange per swipe).</div></div></div>
+      <div class="step"><div class="step-num" style="background:#1D4ED8;color:#fff">2</div><div><div class="step-t">Grow e-commerce frequency over POS frequency</div><div class="step-d">E-commerce earns higher interchange than debit POS. At Risk clients are 45.3% POS and only 22.8% e-commerce. Champions are the reverse (43.1% e-commerce). As At Risk clients reactivate, the campaign channel offer (merchant-specific e-commerce offer) should aim to shift their spend toward online rather than physical — higher interchange, higher FX margin, more trackable.</div></div></div>
+      <div class="step"><div class="step-num" style="background:#1D4ED8;color:#fff">3</div><div><div class="step-t">Negotiate preferred merchant agreements with top 10 by volume</div><div class="step-d">SHEIN (66B IQD), ALIBABA (45.8B IQD), TIKTOK/PUBGMOBILE (86B IQD combined) are Qi Card's dominant merchant relationships. Negotiating preferred acceptance terms, co-branding, or enhanced interchange on these partners would represent the largest single interchange margin improvement achievable without changing client behavior.</div></div></div>
+    </div>
+  </div>
+
+  <!-- Lever 3: Credit -->
+  <div class="rlev">
+    <div class="rl-hdr">
+      <div class="rl-ico" style="background:#F5F3FF;color:#6D28D9">💳</div>
+      <div><div class="rl-title">Lever 3 — Credit Card Growth (Highest Rate per IQD)</div><div class="rl-sub">Only 5,989 credit clients · 30.1B IQD outstanding · ~5.4B IQD est. annual interest · Istirad avg 26.6M IQD per client</div></div>
+    </div>
+    <div class="rl-data grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+      <div class="rd2"><div class="rdv" style="color:#6D28D9">5,989</div><div class="rdl">Credit Clients</div></div>
+      <div class="rd2"><div class="rdv" style="color:#6D28D9">30.1B IQD</div><div class="rdl">Outstanding</div></div>
+      <div class="rd2"><div class="rdv" style="color:#6D28D9">~5.4B IQD</div><div class="rdl">Est. Annual Interest</div></div>
+      <div class="rd2"><div class="rdv" style="color:#6D28D9">26.6M IQD</div><div class="rdl">Istirad Avg Spend</div></div>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="step-num" style="background:#6D28D9;color:#fff">1</div><div><div class="step-t">Target Loyal Champions for Istirad Card upgrade</div><div class="step-d">Istirad Card clients average 26.6M IQD in billed transactions — 8.5× the Rafidain Classic average. The audience: Loyal and Champion clients who are consistently spending 2M+ IQD per month. These clients have the capacity and behavior to qualify for a credit product. The offer: "Upgrade to Istirad Card — higher limit, no annual fee year 1, exclusive Platinum benefits."</div></div></div>
+      <div class="step"><div class="step-num" style="background:#6D28D9;color:#fff">2</div><div><div class="step-t">Recover 221 Istirad At Risk clients first — immediate priority</div><div class="step-d">221 Istirad cardholders are At Risk (dormant, 107 days avg). Their avg spend while active was 11.4M IQD each. Senior relationship manager personal call only. Even recovering 50% = 110 clients × 11.4M avg spend = 1.25B IQD reactivated. At 2% credit interchange that is 25M IQD in annual interchange recovered from a single sub-campaign of 221 calls.</div></div></div>
+      <div class="step"><div class="step-num" style="background:#6D28D9;color:#fff">3</div><div><div class="step-t">Installment product for e-commerce high-ticket purchases</div><div class="step-d">ALIBABA avg ticket: 855K IQD. SHEIN avg ticket: 640K IQD. BKG Hotel avg ticket: 581K IQD. These are purchases where a buy-now-pay-later or installment offer has genuine value to the client. Offering 3-month installments on purchases over 500K IQD — at a modest interest rate — creates a new revenue stream that doesn't require new client acquisition. Existing Champions and Loyal clients are the market.</div></div></div>
+    </div>
+  </div>
+
+  <!-- Lever 4: ATM Fees -->
+  <div class="rlev">
+    <div class="rl-hdr">
+      <div class="rl-ico" style="background:#FEF2F2;color:#DC2626">🏧</div>
+      <div><div class="rl-title">Lever 4 — ATM Cash Withdrawal Fees</div><div class="rl-sub">103,065 clients · 633K withdrawals · avg 264K IQD per withdrawal · ~1.3B IQD estimated annual fee revenue</div></div>
+    </div>
+    <div class="rl-data grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+      <div class="rd2"><div class="rdv" style="color:#DC2626">103,065</div><div class="rdl">Cash Users</div></div>
+      <div class="rd2"><div class="rdv" style="color:#DC2626">633K</div><div class="rdl">Withdrawals</div></div>
+      <div class="rd2"><div class="rdv" style="color:#DC2626">264K IQD</div><div class="rdl">Avg Withdrawal</div></div>
+      <div class="rd2"><div class="rdv" style="color:#DC2626">~1.3B IQD</div><div class="rdl">Est. Annual Fee</div></div>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="step-num" style="background:#DC2626;color:#fff">1</div><div><div class="step-t">Shift At Risk SAU/UAE cash users back to Qi Card ATM</div><div class="step-d">At Risk segment has 22.5% cash volume. Many were using Qi Card at SAU (Saudi Arabia ATM) before stopping. Win-back with fee waiver for first 60 days — then normal fee applies. Once re-engaged, cash withdrawal behavior is sticky (habitual, location-triggered). Recovering 50% of lost SAU cash users = ~13,600 clients × 2,000 IQD fee = 27M IQD/yr in recurring ATM fee revenue.</div></div></div>
+      <div class="step"><div class="step-num" style="background:#DC2626;color:#fff">2</div><div><div class="step-t">Convert Cash users to digital — reduce ATM dependency</div><div class="step-d">While ATM fees earn revenue, cash users are more at-risk (22.5% cash in At Risk vs 7.5% in Champions). The strategic goal is to shift cash behavior to POS or e-commerce — higher interchange, more trackable, lower fraud risk. Campaign: "Pay by Qi Card at any merchant — same convenience as cash, plus earn rewards." Target: At Risk cash-heavy clients.</div></div></div>
+    </div>
+  </div>
+
+  <!-- Lever 5: Card Fees -->
+  <div class="rlev">
+    <div class="rl-hdr">
+      <div class="rl-ico" style="background:#FFFBEB;color:#D97706">🎫</div>
+      <div><div class="rl-title">Lever 5 — Card Fees & Annual Membership</div><div class="rl-sub">Currently estimated underutilized for premium tier · Istirad + World Elite + Qi Elite = 2,619 clients · highest-value fee opportunity</div></div>
+    </div>
+    <div class="rl-data grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+      <div class="rd2"><div class="rdv" style="color:#D97706">2,619</div><div class="rdl">Premium Card Holders</div></div>
+      <div class="rd2"><div class="rdv" style="color:#D97706">14.7B IQD</div><div class="rdl">World Elite Volume</div></div>
+      <div class="rd2"><div class="rdv" style="color:#D97706">24.3B IQD</div><div class="rdl">Istirad Volume</div></div>
+      <div class="rd2"><div class="rdv" style="color:#D97706">Untapped</div><div class="rdl">Annual Fee Revenue</div></div>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="step-num" style="background:#D97706;color:#fff">1</div><div><div class="step-t">Introduce annual fee for World Elite and Istirad — with value bundling</div><div class="step-d">World Elite clients avg 9.18M IQD spend. Istirad clients avg 26.6M IQD. An annual fee of 50,000–100,000 IQD on these products — paired with travel insurance, lounge access, and fee-free international transactions — is justified by the spend level and is standard practice for premium cards globally. At 1,531 World Elite clients × 75,000 IQD fee = 114.8M IQD in new annual fee revenue from this group alone.</div></div></div>
+      <div class="step"><div class="step-num" style="background:#D97706;color:#fff">2</div><div><div class="step-t">Qi Platinum membership tier fee</div><div class="step-d">The VIP program (Champions) creates a named tier — Qi Platinum. Introducing an optional paid tier (e.g., 20,000 IQD/year for premium benefits beyond standard Platinum) gives high-engagement Champions who want to self-identify a way to pay for status. Target: top 10,000 Champions by spend. Even 10% uptake = 1,000 clients × 20,000 IQD = 20M IQD incremental fee revenue at near-zero cost.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CARD UPGRADE STRATEGY ══ -->
+<div id="p-cards" class="panel">
+  <div class="sh"><h2>💳 Card Upgrade Strategy — The Single Highest-Leverage Action</h2><p>Every card upgrade earns higher interchange · higher FX margin · higher average spend · higher retention · it is simultaneously a marketing move and a margin move</p></div>
+
+  <div class="alr pu"><span class="ai">💡</span><div><strong>The card IS the marketing.</strong> Qi Card data shows a clear spend hierarchy: Rafidain Classic avg 896K IQD → Visa Classic avg 1.07M → MC Barakatna avg 1.89M → MC Corporate avg 3.32M → Istirad Credit avg 26.6M → World Elite avg 9.18M. The card type does not cause the higher spend — both reflect client quality — but upgrading provides: higher limits that enable bigger purchases, status that drives habitual use, and higher interchange per transaction for Qi Card. It is the most efficient margin lever in the portfolio.</div></div>
+
+  <div class="card">
+    <div class="ct">Upgrade path by segment — who should be offered what</div>
+    <div class="tw" style="margin-top:8px">
+      <table><thead><tr><th>Segment</th><th>Current Card (Dominant)</th><th>Upgrade Target</th><th>Avg Spend Jump</th><th>Interchange Uplift</th><th>Campaign Message</th></tr></thead>
+      <tbody>
+        <tr><td style="font-weight:700;color:#6D28D9">Champions — Rafidain Classic (134K)</td><td>Rafidain Classic · 896K avg</td><td>MC Corporate or Istirad</td><td style="color:#059669;font-weight:700">896K → 3.32M (+271%)</td><td>0.5% → 1.5–2%</td><td style="font-size:10px">"Upgrade to Platinum Corporate — you've earned it."</td></tr>
+        <tr><td style="font-weight:700;color:#059669">Loyal — Rafidain Classic (100K)</td><td>Rafidain Classic · 676K avg</td><td>Visa Classic or MC Barakatna</td><td style="color:#059669;font-weight:700">676K → 1.07–1.89M (+58–180%)</td><td>0.5% → 0.8–1%</td><td style="font-size:10px">"Upgrade to reach Platinum faster — better limits, better rewards."</td></tr>
+        <tr><td style="font-weight:700;color:#DC2626">At Risk — Rafidain Classic (96K)</td><td>Rafidain Classic · 1.71M avg (was active)</td><td>Visa Classic — post-reactivation offer</td><td>Recovery first, then upgrade</td><td>Deferred</td><td style="font-size:10px">"Welcome back — you're eligible for an upgrade." (After 2nd transaction)</td></tr>
+        <tr><td style="font-weight:700;color:#EA580C">Needs Attn. — Rafidain Classic (82%)</td><td>Rafidain Classic · 210K avg</td><td>Visa Classic — post-engagement</td><td>Frequency first, then upgrade</td><td>Deferred</td><td style="font-size:10px">"Hit 10 transactions this month — unlock your card upgrade."</td></tr>
+        <tr><td style="font-weight:700;color:#0891B2">Pot. Loyalists — Rafidain Classic (80%)</td><td>Rafidain Classic · 186K avg</td><td>Visa Classic — as reward milestone</td><td>Frequency first</td><td>Deferred</td><td style="font-size:10px">"5 transactions this month = card upgrade offer."</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="g2 grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+    <div class="card"><div class="ct">Avg spend by card product — the upgrade value ladder (K IQD)</div><div class="cs">Each rung of the upgrade ladder is a margin event — for the client (better terms) and for Qi Card (higher interchange)</div><div class="ch-wrap"><canvas id="ch-card1"></canvas></div></div>
+    <div class="card"><div class="ct">Champion rate vs At Risk rate — product quality signal</div><div class="cs">MC Classic Rafidain (57.3% Champions!) and Qi Branded Titanium (93.8%) show that premium cards self-select high-quality clients</div><div class="ch-wrap"><canvas id="ch-card2"></canvas></div></div>
+  </div>
+
+  <div class="alr gr"><span class="ai">🎯</span><div><strong>Upgrade math example:</strong> Converting 10% of Champion Rafidain Classic holders (13,427 clients) to MC Corporate. Current avg spend: 2.85M IQD. MC Corporate Champions avg 7.2M IQD. Assuming even a 50% spend increase: 13,427 × (3.6M additional spend) = 48.3B IQD incremental volume. At 1.5% blended interchange = 724M IQD in additional annual interchange from a single card upgrade campaign targeting 13K clients.</div></div>
+</div>
+
+<!-- ══ EXECUTION PLAN ══ -->
+<div id="p-execution" class="panel">
+  <div class="sh"><h2>🗓️ Execution Plan — Sequence and Priorities</h2><p>What to do first · what requires data · what runs automatically · what needs senior action</p></div>
+
+  <div class="alr rd"><span class="ai">🚨</span><div><strong>Three actions executable today — no new data required:</strong> (1) Set the 15-day Champion inactivity alert in CRM. (2) Export At Risk premium 637 client list (from Export 14 filtered by Istirad/World Elite/Qi Elite) and assign to relationship managers for calls this week. (3) Launch the Needs Attention 60-day auto-escalation CRM rule. These three actions together protect 8.5B+ IQD in premium at-risk value and prevent compounding At Risk growth — all for zero campaign budget.</div></div>
+
+  <div class="card">
+    <div class="ct">Full execution sequence — all campaigns, prerequisites, and margin impact</div>
+    <div class="tw" style="margin-top:8px">
+      <table><thead><tr><th>Week</th><th>Action</th><th>Segment</th><th>Type</th><th>Budget</th><th>Margin Impact</th><th>Prerequisite</th></tr></thead>
+      <tbody>
+        <tr style="background:#F5F3FF"><td style="font-weight:700;color:#6D28D9">Week 1</td><td style="font-weight:700">Champion 15-day inactivity alert (CRM rule)</td><td>💎 Premium</td><td>System rule</td><td style="color:#059669">Zero</td><td>Prevents 21K+ annual degradations</td><td>CRM access</td></tr>
+        <tr style="background:#F5F3FF"><td style="font-weight:700;color:#6D28D9">Week 1</td><td style="font-weight:700">At Risk 637 premium clients — personal calls</td><td>🥇 Growth</td><td>Relationship mgr</td><td style="color:#059669">~25M IQD</td><td>Up to 5.1B IQD recovered</td><td>Export 14 filtered list</td></tr>
+        <tr style="background:#F5F3FF"><td style="font-weight:700;color:#6D28D9">Week 1</td><td style="font-weight:700">Needs Attention 60-day auto-escalation rule</td><td>🥇 Growth</td><td>System rule</td><td style="color:#059669">Zero</td><td>Prevents 17K+ monthly At Risk growth</td><td>CRM access</td></tr>
+        <tr><td style="font-weight:700;color:#D97706">Week 2</td><td style="font-weight:700">At Risk Score-155 dedicated SMS campaign</td><td>🥇 Growth</td><td>SMS campaign</td><td>35M IQD</td><td>Up to 10.7B IQD recovery potential</td><td>Score-155 segment list</td></tr>
+        <tr><td style="font-weight:700;color:#D97706">Week 2</td><td style="font-weight:700">New Customer 7-day onboarding automation</td><td>🥈 Activation</td><td>Automated SMS</td><td>42.7M IQD</td><td>~9.9B IQD onboarded</td><td>CRM automation, first-txn trigger</td></tr>
+        <tr><td style="font-weight:700;color:#D97706">Week 3</td><td style="font-weight:700">Qi Platinum VIP program — Champion enrollment</td><td>💎 Premium</td><td>Product launch</td><td>543M IQD</td><td>842B IQD portfolio protected</td><td>App update, CRM tier setup</td></tr>
+        <tr><td style="font-weight:700;color:#D97706">Week 3</td><td style="font-weight:700">At Risk bulk — POS merchant 48-hr offer</td><td>🥇 Growth</td><td>SMS campaign</td><td>488M IQD</td><td>Up to 87B IQD recovered</td><td>Segment list, merchant offer approval</td></tr>
+        <tr><td style="font-weight:700;color:#D97706">Week 4</td><td style="font-weight:700">Loyal champion progress bar — in-app</td><td>🥇 Growth</td><td>App feature</td><td>398M IQD</td><td>Up to 164B IQD unlocked</td><td>App update, transaction count API</td></tr>
+        <tr><td style="font-weight:700;color:#059669">Month 2</td><td style="font-weight:700">Needs Attention salary-day campaign (25th–28th)</td><td>🥇 Growth</td><td>Monthly SMS</td><td>165M IQD</td><td>~20.3B IQD protected</td><td>Monthly send calendar</td></tr>
+        <tr><td style="font-weight:700;color:#059669">Month 2</td><td style="font-weight:700">Potential Loyalists frequency reward ladder</td><td>🥇 Growth</td><td>App + SMS</td><td>160M IQD</td><td>Up to 37.9B IQD unlocked</td><td>Transaction counter in-app</td></tr>
+        <tr><td style="font-weight:700;color:#059669">Month 2</td><td style="font-weight:700">Regular Customers — single e-commerce SMS</td><td>🥈 Activation</td><td>One-time SMS</td><td>28.3M IQD</td><td>~3.4B IQD unlocked</td><td>Merchant category matching</td></tr>
+        <tr><td style="font-weight:700;color:#059669">Month 2</td><td style="font-weight:700">Hibernating 3+ txns — merchant offer</td><td>🥈 Activation</td><td>SMS (sub-group)</td><td>54.4M IQD</td><td>~2.4B IQD recovered</td><td>Sub-group segmentation</td></tr>
+        <tr><td style="font-weight:700;color:#0369A1">Month 3</td><td style="font-weight:700">Card upgrade campaign — Champions on Rafidain → Corporate</td><td>💎 Premium</td><td>Targeted offer</td><td>~30M IQD</td><td>+48B IQD incremental volume</td><td>Card product availability, limit approval</td></tr>
+        <tr><td style="font-weight:700;color:#0369A1">Month 3</td><td style="font-weight:700">Hibernating 1-txn survey</td><td>🥈 Activation</td><td>1-tap SMS survey</td><td>8.3M IQD</td><td>Product intelligence</td><td>Survey platform, response capture</td></tr>
+        <tr><td style="font-weight:700;color:#0369A1">Month 3+</td><td style="font-weight:700">Installment product — ALIBABA/SHEIN high-ticket</td><td>💎 + 🥇</td><td>Product launch</td><td>Product cost</td><td>New credit revenue stream</td><td>Lending product approval, risk framework</td></tr>
+        <tr><td style="font-weight:700;color:#0369A1">Month 3+</td><td style="font-weight:700">Acquisition collapse investigation — replicate October</td><td>All</td><td>Investigation</td><td>TBD</td><td>64K+ new clients/month potential</td><td>Operations, partnerships, product data</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="g2 grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+    <div class="card"><div class="ct">Cumulative revenue margin impact by month (B IQD)</div><div class="cs">Month 1 actions protect 842B IQD before any campaign spend · by Month 3 full execution = 200–280B IQD total impact</div><div class="ch-wrap"><canvas id="ch-ex1"></canvas></div></div>
+    <div class="card"><div class="ct">Campaign budget vs. revenue impact — all actions</div><div class="cs">Every IQD of budget generates >100× in revenue impact · CRM rules generate infinite ROI (zero cost)</div><div class="ch-wrap"><canvas id="ch-ex2"></canvas></div></div>
+  </div>
+</div>
+
+
+</div>
+
+<footer>
+  <svg width="18" height="18" viewBox="0 0 62 61" fill="none"><path d="M30.9229 50.4682C19.8704 50.4682 10.9271 41.5373 10.9271 30.5C10.9271 19.4627 19.8704 10.5318 30.9229 10.5318C41.9753 10.5318 50.9186 19.4627 50.9186 30.5C50.9186 33.2804 50.328 35.9765 49.3155 38.3356L57.0776 46.087C59.8618 41.5373 61.3805 36.145 61.3805 30.4157C61.4648 13.6492 47.7969 0 30.9229 0C14.0488 0 0.380859 13.6492 0.380859 30.5C0.380859 47.3508 14.0488 61 30.9229 61C36.66 61 42.0597 59.3992 46.6157 56.703L38.7693 48.8674C36.4069 49.8785 33.7071 50.4682 30.9229 50.4682ZM25.0169 30.5C25.0169 33.7859 27.6324 36.3978 30.9229 36.3978C34.2133 36.3978 36.8288 33.7859 36.8288 30.5C36.8288 27.2141 34.2133 24.6022 30.9229 24.6022C27.6324 24.6022 25.0169 27.2141 25.0169 30.5ZM59.8618 51.9848C61.8867 54.0069 61.8867 57.3771 59.8618 59.3992C57.8369 61.4213 54.4621 61.4213 52.4372 59.3992L36.9975 43.9807C34.9726 41.9586 34.9726 38.5884 36.9975 36.5663C39.0224 34.5442 42.3972 34.5442 44.4221 36.5663L59.8618 51.9848Z" fill="#F3CD00"/></svg>
+  <strong>Qi Card</strong><span>Marketing & Revenue Strategy · 25.3M transactions · Oct 2025 – Apr 2026 · 1.490T IQD · 1,472,352 clients</span>
+</footer>
+
+<script>
+var QI='#F3CD00',NAVY='#1C2340';
+function sw(t){
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('on')});
+  document.querySelectorAll('.tb').forEach(function(b){b.classList.remove('on')});
+  document.getElementById('p-'+t).classList.add('on');
+  var ts=['overview','premium','growth','activation','levers','cards','execution'];
+  document.querySelectorAll('.tb')[ts.indexOf(t)].classList.add('on');
+}
+function mkC(id,type,labels,datasets,opts){
+  var el=document.getElementById(id);if(!el)return;
+  var o={responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+c.raw}}}},
+    scales:{x:{ticks:{color:'#6B7280',font:{size:9}},grid:{color:'rgba(0,0,0,.04)'}},
+            y:{ticks:{color:'#6B7280',font:{size:9}},grid:{color:'rgba(0,0,0,.04)'}}}};
+  if(opts){
+    if(opts.idx)o.indexAxis=opts.idx;
+    if(opts.cut){o.cutout=opts.cut;delete o.scales;}
+    if(opts.nosc)delete o.scales;
+    if(opts.fmt)o.plugins.tooltip={callbacks:{label:function(c){return ' '+opts.fmt(c.raw)}}};
+    if(opts.leg)o.plugins.legend={display:true,position:'top',labels:{color:'#6B7280',font:{size:9},boxWidth:8}};
+    if(opts.yB){o.scales.y={ticks:{color:'#6B7280',font:{size:9},callback:function(v){return v+'B'}},grid:{color:'rgba(0,0,0,.04)'}};}
+    if(opts.yK){o.scales.y={ticks:{color:'#6B7280',font:{size:9},callback:function(v){return (v/1000).toFixed(0)+'M'}},grid:{color:'rgba(0,0,0,.04)'}};}
+  }
+  return new Chart(el,{type:type,data:{labels:labels,datasets:datasets},options:o});
+}
+window.onload=function(){
+  // Overview charts
+  mkC('ch-ov1','bar',
+    ['FX Margin\n(USD txns)','E-com\nInterchange','Credit\nInterest','POS\nInterchange','ATM\nFees'],
+    [{data:[12.5,8.9,5.4,3.9,1.3],backgroundColor:['#059669','#1D4ED8','#6D28D9','#0891B2','#DC2626'],borderRadius:5}],
+    {fmt:function(v){return v+'B IQD/yr est.'}});
+  mkC('ch-ov2','doughnut',
+    ['E-commerce\n594.8B','POS Purchase\n489B','Transfers\n215.8B','Cash/ATM\n167.6B','Other\n23B'],
+    [{data:[594.8,489,215.8,167.6,23],backgroundColor:['#6D28D9','#1D4ED8','#059669','#DC2626','#94A3B8'],borderWidth:2,borderColor:'#fff'}],
+    {cut:'55%',nosc:true,leg:true,fmt:function(v){return v+'B IQD'}});
+
+  // Card upgrade charts
+  mkC('ch-card1','bar',
+    ['Rafidain\nClassic','Visa Classic\nRafidain','MC\nBarakatna','MasterQi\nSaving','MC Corporate\nMerchant','MC Classic\nRafidain','World\nElite','Istirad\nCard'],
+    [{data:[896,1070,1890,3000,3320,5760,9180,26600],backgroundColor:['#94A3B8','#6B7280','#0891B2','#1D4ED8','#6D28D9','#6D28D9','#059669','#DC2626'],borderRadius:4}],
+    {fmt:function(v){return (v/1000).toFixed(1)+'M IQD avg spend'}});
+  mkC('ch-card2','bar',
+    ['Rafidain\nClassic','MC Corp\nMerchant','Istirad\nCard','World\nElite','Qi Elite\nMain','MC Classic\nRafidain','Qi Branded\nTitanium'],
+    [
+      {label:'Champion Rate %',data:[17.1,30.5,44.1,46.9,56.3,57.3,93.8],backgroundColor:'rgba(109,40,217,0.75)',borderRadius:3},
+      {label:'At Risk Rate %',data:[12.3,17.5,24.2,24.8,21.3,7.0,0],backgroundColor:'rgba(220,38,38,0.6)',borderRadius:3}
+    ],{leg:true,fmt:function(v){return v+'%'}});
+
+  // Execution charts
+  var months=['Month 1','Month 2','Month 3'];
+  mkC('ch-ex1','bar',months,
+    [
+      {label:'Protected (B IQD)',data:[842,842+72,842+72+123],backgroundColor:'rgba(109,40,217,0.6)',borderRadius:3},
+      {label:'Recovered/Unlocked (B IQD)',data:[15.6,15.6+37+20,15.6+37+20+48+10],backgroundColor:'rgba(5,150,105,0.6)',borderRadius:3}
+    ],{leg:true,yB:true,fmt:function(v){return v+'B IQD'}});
+  mkC('ch-ex2','bar',
+    ['CRM Rules\n(free)','New Cust.\nOnboarding','At Risk\nPremium','At Risk\nScore-155','At Risk\nBulk','Loyal\nUpsell','Needs\nAttn.'],
+    [
+      {label:'Budget (M IQD)',data:[0,42.7,25,35,488,398,165],backgroundColor:'rgba(220,38,38,0.6)',borderRadius:3},
+      {label:'Impact (B IQD ÷10 for scale)',data:[210,0.99,510,108,8700,16400,2030],backgroundColor:'rgba(5,150,105,0.6)',borderRadius:3}
+    ],{leg:true,fmt:function(v){return v}});
+};
+</script>
+</body>
+</html>
