@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Qi Card — Client Segmentation Strategy v2</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --qi:#F3CD00;--qi-dark:#C9A200;--qi-navy:#1C2340;--qi-light:#FFFBDE;--qi-border:#E8C000;
+  --w:#fff;--bg:#F5F6FA;--bdr:#E4E7EF;--tx:#1A1A1A;--mt:#6B7280;--ft:#9CA3AF;
+  --red:#DC2626;--red-l:#FEF2F2;--red-b:#FECACA;
+  --grn:#059669;--grn-l:#ECFDF5;--grn-b:#A7F3D0;
+  --amb:#D97706;--amb-l:#FFFBEB;--amb-b:#FDE68A;
+  --pur:#6D28D9;--pur-l:#F5F3FF;--pur-b:#DDD6FE;
+  --r:10px;--rs:6px;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--tx);font-size:13px;line-height:1.5}
+.hdr{background:var(--qi-navy);padding:1rem 2rem;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.hdr h1{font-size:17px;font-weight:800;color:#fff}
+.hdr p{font-size:11px;color:#93A8D0;margin-top:2px}
+.pills{display:flex;gap:7px;margin-top:7px;flex-wrap:wrap}
+.pill{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid}
+.pill.p{background:rgba(109,40,217,.2);border-color:#7C3AED;color:#C4B5FD}
+.pill.g{background:rgba(243,205,0,.15);border-color:#F3CD00;color:#F3CD00}
+.pill.s{background:rgba(148,163,184,.15);border-color:#64748B;color:#CBD5E1}
+.tabs{background:var(--w);border-bottom:2px solid var(--qi);display:flex;overflow-x:auto;padding:0 1.5rem}
+.tb{padding:.65rem 1.1rem;border:none;background:none;cursor:pointer;color:var(--mt);font-size:12px;font-weight:600;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap}
+.tb.on{color:var(--qi-navy);border-bottom-color:var(--qi);font-weight:800}
+.main{max-width:1260px;margin:0 auto;padding:1.5rem 1.75rem 3rem}
+.panel{display:none}.panel.on{display:block}
+.sh{margin-bottom:1.1rem;padding-bottom:.6rem;border-bottom:2px solid var(--qi)}
+.sh h2{font-size:15px;font-weight:800}.sh p{font-size:11px;color:var(--mt);margin-top:3px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:1.2rem}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:1.2rem}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.2rem}
+.card{background:var(--w);border:1px solid var(--bdr);border-radius:var(--r);padding:1rem 1.3rem;margin-bottom:1.1rem}
+.ct{font-size:12px;font-weight:700;margin-bottom:2px}.cs{font-size:10px;color:var(--ft);margin-bottom:9px}
+.kpi{background:var(--w);border:1px solid var(--bdr);border-radius:var(--r);padding:.85rem 1rem}
+.kl{font-size:9px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.kv{font-size:20px;font-weight:800;line-height:1.1}.ks{font-size:10px;color:var(--ft);margin-top:3px}
+.kpi.dk{background:var(--qi-navy)}.kpi.dk .kl{color:#93A8D0}.kpi.dk .kv,.kpi.dk .ks{color:#fff}
+.kpi.qi{background:var(--qi)}.kpi.qi .kl{color:#6B5500}.kpi.qi .kv{color:#1A1400}.kpi.qi .ks{color:#856100}
+.kpi.rd .kv{color:var(--red)}.kpi.rd{border-left:3px solid var(--red)}
+.kpi.gr .kv{color:var(--grn)}.kpi.gr{border-left:3px solid var(--grn)}
+.kpi.am .kv{color:var(--amb)}.kpi.am{border-left:3px solid var(--amb)}
+.kpi.pu .kv{color:var(--pur)}.kpi.pu{border-left:3px solid var(--pur)}
+.alr{border-radius:var(--rs);padding:.75rem 1rem;margin-bottom:.85rem;display:flex;gap:9px;font-size:11.5px;line-height:1.65;align-items:flex-start}
+.alr.rd{background:var(--red-l);border:1px solid var(--red-b)}.alr.rd .ai{color:var(--red)}
+.alr.gr{background:var(--grn-l);border:1px solid var(--grn-b)}.alr.gr .ai{color:var(--grn)}
+.alr.am{background:var(--amb-l);border:1px solid var(--amb-b)}.alr.am .ai{color:var(--amb)}
+.alr.qi{background:var(--qi-light);border:1px solid var(--qi-border)}.alr.qi .ai{color:var(--qi-dark)}
+.alr.pu{background:var(--pur-l);border:1px solid var(--pur-b)}.alr.pu .ai{color:var(--pur)}
+.ai{font-size:14px;flex-shrink:0;margin-top:1px}.alr strong{color:var(--tx)}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:11px}
+thead th{background:var(--qi-navy);color:#fff;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;text-align:left;white-space:nowrap}
+tbody td{padding:7px 10px;border-bottom:1px solid var(--bdr);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--qi-light)}
+/* Package blocks */
+.pkg{border-radius:var(--r);padding:1.3rem 1.5rem;margin-bottom:1.1rem;border:2px solid}
+.pkg.p{background:linear-gradient(135deg,#F5F3FF,#EDE9FE);border-color:#C4B5FD}
+.pkg.g{background:linear-gradient(135deg,#FFFBDE,#FFF3A3);border-color:#FDE68A}
+.pkg.s{background:linear-gradient(135deg,#F8FAFC,#F1F5F9);border-color:#CBD5E1}
+.pkg-hdr{display:flex;align-items:center;gap:12px;margin-bottom:.9rem}
+.pkg-ico{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.pkg-ico.p{background:#7C3AED}.pkg-ico.g{background:var(--qi)}.pkg-ico.s{background:#94A3B8}
+.pkg-name{font-size:17px;font-weight:800}.pkg-sub{font-size:11px;color:var(--mt);margin-top:1px}
+.pkg-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:.85rem}
+.pm{border-radius:var(--rs);padding:9px 11px;text-align:center}
+.pm.p{background:#EDE9FE;border:1px solid #C4B5FD}.pm.g{background:#FFFBDE;border:1px solid #FDE68A}.pm.s{background:#F1F5F9;border:1px solid #CBD5E1}
+.pm-v{font-size:17px;font-weight:800}.pm-l{font-size:9px;color:var(--mt);text-transform:uppercase;letter-spacing:.3px;margin-top:1px}
+.pkg-box{background:rgba(255,255,255,.7);border-radius:var(--rs);padding:.9rem 1rem;margin-bottom:.8rem}
+.pkg-box h4{font-size:12px;font-weight:700;margin-bottom:.55rem}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pa{font-size:11px;padding:8px 10px;border-radius:var(--rs);background:rgba(255,255,255,.85);line-height:1.55}
+.pa-t{font-weight:700;margin-bottom:2px;font-size:11px}.pa-d{color:var(--mt);font-size:10px}
+.out-row{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:11px;border-bottom:1px solid rgba(0,0,0,.06)}
+.out-row:last-child{border:none}.out-m{font-weight:700;min-width:140px}.out-v{color:var(--grn);font-weight:800;min-width:110px}.out-n{color:var(--mt);font-size:10px}
+/* Account table */
+.acc-badge{display:inline-block;font-family:monospace;font-size:11px;background:#1C2340;color:#F3CD00;padding:2px 8px;border-radius:4px;letter-spacing:.5px}
+.pbar-wrap{display:flex;align-items:center;gap:5px}
+.pbar{height:5px;border-radius:3px;background:#E5E7EB;width:70px}
+.pbf{height:100%;border-radius:3px}
+/* Merchant case study */
+.mcard{background:var(--w);border:1px solid var(--bdr);border-radius:var(--r);padding:1.1rem 1.3rem;margin-bottom:.9rem}
+.mcard-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.7rem}
+.mname{font-size:14px;font-weight:800}.msub{font-size:10px;color:var(--mt);margin-top:1px}
+.mbadge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid;white-space:nowrap}
+.mstats{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:.75rem}
+.ms{background:var(--bg);border-radius:var(--rs);padding:7px 9px;text-align:center}
+.ms-v{font-size:14px;font-weight:800}.ms-l{font-size:9px;color:var(--mt);text-transform:uppercase;letter-spacing:.3px;margin-top:1px}
+.minsight{font-size:11px;color:var(--mt);line-height:1.6;border-top:1px solid var(--bdr);padding-top:.6rem}
+.minsight strong{color:var(--tx)}
+/* Pareto diagram */
+.pareto-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--bdr);font-size:11px}
+.pareto-row:last-child{border:none}
+.pareto-seg{min-width:160px;font-weight:700}
+.pareto-bar-wrap{flex:1;display:flex;align-items:center;gap:6px}
+.pareto-bar{height:8px;border-radius:4px;transition:.3s}
+.pareto-num{font-size:10px;color:var(--mt);min-width:110px}
+footer{background:var(--qi-navy);color:#fff;text-align:center;padding:1.1rem;font-size:11px;display:flex;align-items:center;justify-content:center;gap:10px}
+footer span{color:#93A8D0}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <svg width="38" height="38" viewBox="0 0 62 61" fill="none"><path d="M30.9229 50.4682C19.8704 50.4682 10.9271 41.5373 10.9271 30.5C10.9271 19.4627 19.8704 10.5318 30.9229 10.5318C41.9753 10.5318 50.9186 19.4627 50.9186 30.5C50.9186 33.2804 50.328 35.9765 49.3155 38.3356L57.0776 46.087C59.8618 41.5373 61.3805 36.145 61.3805 30.4157C61.4648 13.6492 47.7969 0 30.9229 0C14.0488 0 0.380859 13.6492 0.380859 30.5C0.380859 47.3508 14.0488 61 30.9229 61C36.66 61 42.0597 59.3992 46.6157 56.703L38.7693 48.8674C36.4069 49.8785 33.7071 50.4682 30.9229 50.4682ZM25.0169 30.5C25.0169 33.7859 27.6324 36.3978 30.9229 36.3978C34.2133 36.3978 36.8288 33.7859 36.8288 30.5C36.8288 27.2141 34.2133 24.6022 30.9229 24.6022C27.6324 24.6022 25.0169 27.2141 25.0169 30.5ZM59.8618 51.9848C61.8867 54.0069 61.8867 57.3771 59.8618 59.3992C57.8369 61.4213 54.4621 61.4213 52.4372 59.3992L36.9975 43.9807C34.9726 41.9586 34.9726 38.5884 36.9975 36.5663C39.0224 34.5442 42.3972 34.5442 44.4221 36.5663L59.8618 51.9848Z" fill="#F3CD00"/></svg>
+  <div>
+    <h1>Qi Card — Client Segmentation Strategy v2</h1>
+    <p>Pareto-correct Premium tier · Account-level usage · Merchant case studies · Oct 2025 – Apr 2026 · 1,472,352 clients · 1.490T IQD</p>
+    <div class="pills">
+      <span class="pill p">💎 Premium — 271,682 clients = 18.5% of base = 56.5% of value (Champions only)</span>
+      <span class="pill g">🥇 Growth — 661,163 clients = At Risk + Loyal + Needs Attn. + Pot. Loyalists</span>
+      <span class="pill s">🥈 Activation — 399,630 real campaign targets · New + Regular + Hib. 3+ txns</span>
+    </div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tb on" onclick="sw('pareto')">📊 Pareto Analysis</button>
+  <button class="tb" onclick="sw('accounts')">👤 Client Usage</button>
+  <button class="tb" onclick="sw('merchants')">🏪 Merchant Case Study</button>
+  <button class="tb" onclick="sw('premium')">💎 Premium Package</button>
+  <button class="tb" onclick="sw('growth')">🥇 Growth Package</button>
+  <button class="tb" onclick="sw('activation')">🥈 Activation Package</button>
+  <button class="tb" onclick="sw('cardtypes')">💳 Card Types</button>
+  <button class="tb" onclick="sw('cardseg')">📊 Cards × Segments</button>
+  <button class="tb" onclick="sw('outcomes')">📈 Outcomes</button>
+</div>
+
+<div class="main">
+
+<!-- ══ PARETO ══ -->
+<div id="p-pareto" class="panel on">
+  <div class="sh"><h2>Pareto Analysis — The Real 80/20 of Qi Card</h2><p>Why Premium must be Champions only: 18.5% of clients generate 56.5% of value</p></div>
+
+  <div class="alr pu"><span class="ai">💡</span><div><strong>Correction from previous version:</strong> Premium was incorrectly assigned to Champions + At Risk + Loyal = 49.8% of clients. That is not a premium tier — that is half your portfolio. The correct premium tier is Champions alone: 271,682 clients (18.5%) generating 842B IQD (56.5% of total value). This is the true Pareto elite. At Risk and Loyal are high-priority Growth targets, not Premium — they have not demonstrated current engagement.</div></div>
+
+  <div class="g4">
+    <div class="kpi pu"><div class="kl">💎 Premium (Champions only)</div><div class="kv">18.5%</div><div class="ks">of clients → 56.5% of value (842B IQD)</div></div>
+    <div class="kpi gr"><div class="kl">Champions + At Risk</div><div class="kv">31.7%</div><div class="ks">of clients → 75.9% of value (1.132T IQD)</div></div>
+    <div class="kpi gr"><div class="kl">Top 3 segments</div><div class="kv">49.8%</div><div class="ks">of clients → 92.8% of value (1.383T IQD)</div></div>
+    <div class="kpi qi"><div class="kl">Bottom 5 segments</div><div class="kv">50.2%</div><div class="ks">of clients → only 7.2% of value (107B IQD)</div></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">Value Pareto by Segment — who generates what share of 1.490T IQD</div>
+    <div class="cs">Champions alone = 56.5% · adding At Risk reaches 75.9% · all three top segments = 92.8%</div>
+    <div id="pareto-rows" style="margin-top:10px"></div>
+  </div>
+
+  <div class="g2">
+    <div class="card"><div class="ct">Cumulative value vs cumulative clients</div><div class="cs">Steep curve confirms classic Pareto — top 20% clients drive 75%+ of revenue</div><div style="position:relative;height:230px"><canvas id="ch-pareto1"></canvas></div></div>
+    <div class="card"><div class="ct">Correct three-tier structure</div><div class="cs">Premium = Champions only · Growth = recovery and upgrade targets · Activation = onboarding and reactivation</div><div style="position:relative;height:230px"><canvas id="ch-pareto2"></canvas></div></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">Three-tier package redesign — rationale</div>
+    <div class="tw" style="margin-top:8px">
+      <table><thead><tr><th>Tier</th><th>Segments Included</th><th>Clients</th><th>Value</th><th>% of Value</th><th>Avg Spend</th><th>Rationale</th></tr></thead>
+      <tbody>
+        <tr style="background:#F5F3FF">
+          <td><strong style="color:#6D28D9">💎 Premium</strong></td>
+          <td>Champions only</td>
+          <td style="font-weight:700">271,682</td>
+          <td style="font-weight:700">842B IQD</td>
+          <td><span style="font-weight:800;color:#6D28D9">56.5%</span></td>
+          <td>3.10M IQD</td>
+          <td style="font-size:10px;color:var(--mt)">Currently active (8-day recency) · highest F and M scores · the only segment that has proven engagement AND high value simultaneously</td>
+        </tr>
+        <tr style="background:#FFFBDE">
+          <td><strong style="color:#D97706">🥇 Growth</strong></td>
+          <td>At Risk + Loyal + Needs Attn. + Pot. Loyalists</td>
+          <td style="font-weight:700">800,440</td>
+          <td style="font-weight:700">601B IQD</td>
+          <td><span style="font-weight:800;color:#D97706">40.3%</span></td>
+          <td>751K IQD</td>
+          <td style="font-size:10px;color:var(--mt)">High historical or potential value but either inactive (At Risk), not yet at peak (Loyal), or infrequent (Needs Attn., Pot. Loyalists) · recovery and upgrade targets</td>
+        </tr>
+        <tr style="background:#F8FAFC">
+          <td><strong style="color:#475569">🥈 Activation</strong></td>
+          <td>New Cust. + Regular + Hibernating 3+ txns</td>
+          <td style="font-weight:700">163,009</td>
+          <td style="font-weight:700">33.4B IQD</td>
+          <td><span style="font-weight:800;color:#475569">2.2%</span></td>
+          <td>205K IQD</td>
+          <td style="font-size:10px;color:var(--mt)">Low current value but real activation potential · the 167K Hibernating 1-txn clients are survey-only, not campaign targets</td>
+        </tr>
+        <tr style="background:#FEF2F2">
+          <td><strong style="color:#DC2626">⚠️ Survey Only</strong></td>
+          <td>Hibernating 1-txn</td>
+          <td style="font-weight:700">166,888</td>
+          <td style="font-weight:700">11.1B IQD</td>
+          <td><span style="font-weight:800;color:#DC2626">0.7%</span></td>
+          <td>66K IQD</td>
+          <td style="font-size:10px;color:var(--mt)">Failed onboardings — 1 transaction only · avg spend 66K IQD · no reactivation campaign · 50 IQD survey only to understand why they stopped</td>
+        </tr>
+      </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ACCOUNTS ══ -->
+<div id="p-accounts" class="panel">
+  <div class="sh"><h2>Client Usage by Account Number</h2><p>Top 25 At Risk clients from Export 14 · masked account numbers · sorted by total spend</p></div>
+
+  <div class="alr am"><span class="ai">⚠️</span><div><strong>These are Qi Card's highest-value clients who have gone silent.</strong> Every account shown was spending millions of IQD — the top account alone spent 166.9M IQD. All account numbers are masked per data governance (middle digits replaced with ****). The top_merchant column shows where each client spent most of their lifetime value — it is the anchor for their recovery offer.</div></div>
+
+  <div class="g4">
+    <div class="kpi rd"><div class="kl">Top account spend</div><div class="kv">166.9M IQD</div><div class="ks">Account 715****5622 · 194 days inactive</div></div>
+    <div class="kpi rd"><div class="kl">Average spend (top 25)</div><div class="kv">~98M IQD</div><div class="ks">Each of these 25 clients exceeds 75M IQD lifetime</div></div>
+    <div class="kpi am"><div class="kl">Most common merchant</div><div class="kv">SHEIN.COM</div><div class="ks">222 of top 1,000 At Risk clients · 14.6B IQD</div></div>
+    <div class="kpi am"><div class="kl">Avg recency (top 25)</div><div class="kv">~79 days</div><div class="ks">Range: 63–194 days · most are 60–90 days</div></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">Top 25 At Risk Clients — Full Account Usage Profile (Export 14)</div>
+    <div class="cs">Sorted by total monetary spend · account numbers masked per governance policy · all figures in IQD</div>
+    <div class="tw" style="margin-top:8px">
+      <table>
+        <thead><tr>
+          <th>#</th><th>Account</th><th>RFM Score</th><th>First Txn</th><th>Last Txn</th>
+          <th>Days Inactive</th><th>Frequency</th><th>Total Spend (IQD)</th><th>Spend Tier</th><th>Top Merchant</th>
+        </tr></thead>
+        <tbody id="acc-tbl"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card"><div class="ct">Top 25 At Risk — spend distribution (M IQD)</div><div class="cs">Extreme concentration: top account is 1.7× the second. Each bar is one account.</div><div style="position:relative;height:230px"><canvas id="ch-acc1"></canvas></div></div>
+    <div class="card"><div class="ct">Top merchant frequency — At Risk top 1,000 clients</div><div class="cs">SHEIN.COM is the single most common top merchant for at-risk high-value clients (222 clients)</div><div style="position:relative;height:230px"><canvas id="ch-acc2"></canvas></div></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">Inactivity vs spend — top 25 At Risk clients</div>
+    <div class="cs">Recency days on X-axis · spend size on Y-axis · RFM score shown in label · most cluster at 63–86 days, very recent At Risk entries</div>
+    <div style="position:relative;height:240px"><canvas id="ch-acc3"></canvas></div>
+  </div>
+</div>
+
+<!-- ══ MERCHANT CASE STUDY ══ -->
+<div id="p-merchants" class="panel">
+  <div class="sh"><h2>Merchant Case Study — Top 10 by Volume</h2><p>What each merchant tells us about Qi Card clients · champion rate · at-risk rate · trend · strategic implication</p></div>
+
+  <div class="alr qi"><span class="ai">📌</span><div><strong>Three merchant archetypes emerge from the data:</strong> (1) <strong>Champion-dominant merchants</strong> like ALIPAY, TIKTOK ADS, ARAB BANK JORDAN — these are where Qi Card's best clients spend. (2) <strong>At-Risk-heavy merchants</strong> like SAU, FAB, ABU DHABI ISLAMIC BAN — these are where churned clients last spent, and where win-back offers must be placed. (3) <strong>Mass-reach merchants</strong> like DIGITAL ZONE, PUBGMOBILE, APPLE.COM/BILL — high volume, mixed segments, important for retention and breadth.</div></div>
+
+  <div class="g3">
+    <div class="kpi pu"><div class="kl">Top merchant by volume</div><div class="kv">SHEIN.COM</div><div class="ks">66.0B IQD · 15,727 clients · 37.6% Champions</div></div>
+    <div class="kpi rd"><div class="kl">Highest At Risk concentration</div><div class="kv">SAU — 46.8%</div><div class="ks">25.4B IQD · 12,732 at-risk clients · travel ATM pattern</div></div>
+    <div class="kpi gr"><div class="kl">Highest Champion concentration</div><div class="kv">ALIPAY* — 69.6%</div><div class="ks">4.1B IQD · high repeat rate · Champion-only merchant</div></div>
+  </div>
+
+  <!-- Merchant cards -->
+  <div class="mcard">
+    <div class="mcard-hdr">
+      <div><div class="mname">1. SHEIN.COM + WWW.SHEIN.COM</div><div class="msub">Combined e-commerce fashion · #1 merchant by volume · Growing trend</div></div>
+      <span class="mbadge" style="background:#ECFDF5;border-color:#A7F3D0;color:#065F46">📈 GROWING</span>
+    </div>
+    <div class="mstats">
+      <div class="ms"><div class="ms-v" style="color:#059669">84.7B IQD</div><div class="ms-l">Combined Vol.</div></div>
+      <div class="ms"><div class="ms-v">22,839</div><div class="ms-l">Unique Clients</div></div>
+      <div class="ms"><div class="ms-v">152,005</div><div class="ms-l">Transactions</div></div>
+      <div class="ms"><div class="ms-v" style="color:#6D28D9">37.4%</div><div class="ms-l">Champion Rate</div></div>
+      <div class="ms"><div class="ms-v" style="color:#DC2626">22.0%</div><div class="ms-l">At Risk Rate</div></div>
+    </div>
+    <div class="minsight"><strong>Case study:</strong> SHEIN is Qi Card's single most important merchant partner relationship. 37.4% of SHEIN clients are Champions — among the highest champion rates for a high-volume merchant. However, 22.0% are At Risk, representing ~5,024 clients who spent an avg of 640K IQD each at SHEIN and have since gone silent. A co-branded "SHEIN × Qi Card" exclusive offer (e.g. free shipping or 5% cashback) sent to At Risk SHEIN clients would reach the highest-value reactivation target in the entire portfolio. The growing trend (+126% from Oct to Apr) confirms this merchant relationship will only grow in importance. <strong>Recommended action: Priority 1 co-branding negotiation with SHEIN.</strong></div>
+  </div>
+
+  <div class="mcard">
+    <div class="mcard-hdr">
+      <div><div class="mname">2. ALIBABA.COM</div><div class="msub">B2B and wholesale e-commerce · #2 merchant · 855K IQD avg ticket — highest of any top-10 merchant</div></div>
+      <span class="mbadge" style="background:#ECFDF5;border-color:#A7F3D0;color:#065F46">📈 GROWING</span>
+    </div>
+    <div class="mstats">
+      <div class="ms"><div class="ms-v" style="color:#059669">45.8B IQD</div><div class="ms-l">Total Volume</div></div>
+      <div class="ms"><div class="ms-v">9,682</div><div class="ms-l">Unique Clients</div></div>
+      <div class="ms"><div class="ms-v">53,472</div><div class="ms-l">Transactions</div></div>
+      <div class="ms"><div class="ms-v" style="color:#6D28D9">46.2%</div><div class="ms-l">Champion Rate</div></div>
+      <div class="ms"><div class="ms-v" style="color:#DC2626">15.3%</div><div class="ms-l">At Risk Rate</div></div>
+    </div>
+    <div class="minsight"><strong>Case study:</strong> ALIBABA clients spend 855,923 IQD per transaction on average — 33× higher than DIGITAL ZONE's avg ticket (19K). These are business buyers, importers, or high-volume wholesale purchasers. The 46.2% champion rate is among the best of any major merchant, confirming that Alibaba is a self-selection filter for high-value clients. The 15.3% At Risk rate represents ~1,481 former Alibaba buyers who stopped. These clients likely have repeat purchasing patterns tied to business cycles — a targeted "your next Alibaba order" offer during Q4 (Oct–Nov) when import purchasing peaks would be the correct recovery timing. <strong>Recommended action: B2B purchase financing or installment offer targeting Alibaba at-risk clients.</strong></div>
+  </div>
+
+  <div class="mcard">
+    <div class="mcard-hdr">
+      <div><div class="mname">3. SAU (Saudi Arabia ATM / POS)</div><div class="msub">International POS and ATM · highest at-risk concentration of any major merchant · Declining trend</div></div>
+      <span class="mbadge" style="background:#FEF2F2;border-color:#FECACA;color:#991B1B">📉 DECLINING</span>
+    </div>
+    <div class="mstats">
+      <div class="ms"><div class="ms-v" style="color:#DC2626">25.4B IQD</div><div class="ms-l">Total Volume</div></div>
+      <div class="ms"><div class="ms-v">27,182</div><div class="ms-l">Unique Clients</div></div>
+      <div class="ms"><div class="ms-v">90,957</div><div class="ms-l">Transactions</div></div>
+      <div class="ms"><div class="ms-v" style="color:#D97706">11.8%</div><div class="ms-l">Champion Rate</div></div>
+      <div class="ms"><div class="ms-v" style="color:#DC2626">46.8%</div><div class="ms-l">At Risk Rate</div></div>
+    </div>
+    <div class="minsight"><strong>Case study:</strong> SAU represents Qi Card clients who traveled to or worked in Saudi Arabia — using Qi Card for ATM cash and POS purchases. The 46.8% at-risk rate is the most alarming concentration of any major merchant, and the declining trend (peaked in Jan 2026 at 6.9B IQD, fell to 143M IQD by Apr 2026) shows these clients have stopped almost entirely. This is the clearest signal of a competitor capture event — likely Saudi-issued cards or Saudi-based digital wallets. The only 11.8% champion rate confirms this is not a segment of loyal high-frequency users. <strong>Recommended action: International transaction fee waiver + travel offer specifically targeting SAU at-risk clients. Investigate whether Qi Card acceptance is being declined at Saudi merchants.</strong></div>
+  </div>
+
+  <div class="mcard">
+    <div class="mcard-hdr">
+      <div><div class="mname">4. PUBGMOBILE + TIKTOK (Gaming & Social Media)</div><div class="msub">Mobile gaming and social media advertising — combined the largest transaction count in the portfolio</div></div>
+      <span class="mbadge" style="background:#ECFDF5;border-color:#A7F3D0;color:#065F46">📈 GROWING</span>
+    </div>
+    <div class="mstats">
+      <div class="ms"><div class="ms-v" style="color:#059669">86.1B IQD</div><div class="ms-l">Combined Vol.</div></div>
+      <div class="ms"><div class="ms-v">75,000+</div><div class="ms-l">Unique Clients</div></div>
+      <div class="ms"><div class="ms-v">2.05M+</div><div class="ms-l">Transactions</div></div>
+      <div class="ms"><div class="ms-v" style="color:#6D28D9">41.0%</div><div class="ms-l">Avg Champion Rate</div></div>
+      <div class="ms"><div class="ms-v" style="color:#amb">9.3%</div><div class="ms-l">Avg At Risk Rate</div></div>
+    </div>
+    <div class="minsight"><strong>Case study:</strong> PUBGMOBILE (1.04M transactions, 42.0B IQD) and TIKTOK (1.01M transactions, 43.1B IQD) together represent the highest transaction volume of any merchant pair in the portfolio. Low avg tickets (40–42K IQD) but extraordinary frequency. Champion rates of 40–42% confirm these are high-frequency habitual users. PUBGMOBILE's 6.3% At Risk rate is among the lowest of any major merchant, suggesting these clients are the stickiest in the portfolio. TIKTOK's declining trend (peaked Oct 2025 at 5.6B IQD) warrants investigation — a platform change or competitor payment method may have captured share. <strong>Recommended action: Gaming bundle offer (5% back on PUBG + TIKTOK) targeting New Customers and Regular Customers to build a transaction habit fast.</strong></div>
+  </div>
+
+  <div class="mcard">
+    <div class="mcard-hdr">
+      <div><div class="mname">5. FAB + ABU DHABI ISLAMIC BANK (UAE Banking)</div><div class="msub">UAE-based bank ATM and transfer services · extremely high at-risk concentration · Declining trend</div></div>
+      <span class="mbadge" style="background:#FEF2F2;border-color:#FECACA;color:#991B1B">📉 DECLINING</span>
+    </div>
+    <div class="mstats">
+      <div class="ms"><div class="ms-v" style="color:#DC2626">21.9B IQD</div><div class="ms-l">Combined Vol.</div></div>
+      <div class="ms"><div class="ms-v">16,918</div><div class="ms-l">Unique Clients</div></div>
+      <div class="ms"><div class="ms-v">67,223</div><div class="ms-l">Transactions</div></div>
+      <div class="ms"><div class="ms-v" style="color:#D97706">20.6%</div><div class="ms-l">Avg Champion Rate</div></div>
+      <div class="ms"><div class="ms-v" style="color:#DC2626">45.2%</div><div class="ms-l">Avg At Risk Rate</div></div>
+    </div>
+    <div class="minsight"><strong>Case study:</strong> FAB (First Abu Dhabi Bank) and Abu Dhabi Islamic Bank represent Qi Card clients who are sending money or withdrawing cash in the UAE. The 45.2% combined At Risk rate is the second-highest among major merchants after SAU. FAB alone showed a dramatic spike in Jan 2026 (7.8B IQD) followed by a near-complete collapse (158M in Apr 2026) — this is a one-time large transfer event that did not sustain. Abu Dhabi Islamic Bank shows a similar spike in Jan 2026. These clients are likely Iraqis in or traveling through the UAE. <strong>Recommended action: UAE-specific Qi Card activation campaign (fee-free UAE ATM withdrawals for 30 days) + investigate whether UAE merchant acceptance is causing friction that drives clients to local UAE banking alternatives.</strong></div>
+  </div>
+
+  <div class="mcard">
+    <div class="mcard-hdr">
+      <div><div class="mname">6. DIGITAL ZONE + APPLE.COM/BILL (Digital Subscriptions)</div><div class="msub">App store and digital content platform — 415K combined clients, highest client count of any merchant group</div></div>
+      <span class="mbadge" style="background:#FFFBEB;border-color:#FDE68A;color:#92400E">⚠️ MIXED</span>
+    </div>
+    <div class="mstats">
+      <div class="ms"><div class="ms-v" style="color:#D97706">44.4B IQD</div><div class="ms-l">Combined Vol.</div></div>
+      <div class="ms"><div class="ms-v">414,921</div><div class="ms-l">Unique Clients</div></div>
+      <div class="ms"><div class="ms-v">2.74M</div><div class="ms-l">Transactions</div></div>
+      <div class="ms"><div class="ms-v" style="color:#6D28D9">27.5%</div><div class="ms-l">Avg Champion Rate</div></div>
+      <div class="ms"><div class="ms-v" style="color:#amb">8.0%</div><div class="ms-l">Avg At Risk Rate</div></div>
+    </div>
+    <div class="minsight"><strong>Case study:</strong> DIGITAL ZONE (249K clients, 27.9B IQD) is the broadest-reach merchant in the portfolio — touching 17% of all Qi Card clients. Low avg ticket (19K IQD) but massive scale. APPLE.COM/BILL (165K clients) is the most reliable recurring revenue signal: 78.6% repeat rate indicates subscription behavior. Both merchants show low At Risk rates (7–8%), meaning clients who use digital subscriptions tend to stay active. <strong>Critical watch: DIGITAL ZONE declined to near-zero in April 2026 (87K IQD from 4.4B in Mar) — this is either a data issue or a merchant agreement change. Must be investigated immediately. If DIGITAL ZONE loses Qi Card acceptance, 249K clients lose their primary transaction channel.</strong></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">Top 20 merchants — volume, champion rate, at-risk rate, trend</div>
+    <div class="cs">Bubble size = transaction volume · color = champion rate (green) vs at-risk rate (red dominance)</div>
+    <div style="position:relative;height:260px"><canvas id="ch-merch1"></canvas></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">SAU monthly trend — sharp decline confirms competitor capture (B IQD per month)</div>
+    <div class="cs">SAU peaked Jan 2026 at 6.9B IQD · collapsed to 143M IQD by April 2026</div>
+    <div style="position:relative;height:200px"><canvas id="ch-merch2"></canvas></div>
+  </div>
+</div>
+
+<!-- ══ PREMIUM ══ -->
+<div id="p-premium" class="panel">
+  <div class="sh"><h2>💎 Premium Package — Champions Only</h2><p>271,682 clients · 18.5% of base · 842B IQD · 56.5% of total portfolio value</p></div>
+
+  <div class="alr pu"><span class="ai">💎</span><div><strong>This is the correct definition of Premium:</strong> 271,682 clients who are currently active (avg 8 days since last transaction), high frequency (avg 57 transactions), and high spend (avg 3.10M IQD). The previous version incorrectly included At Risk and Loyal — two segments that are either inactive or below Champions' engagement level. Premium must mean currently performing, not historically large.</div></div>
+
+  <div class="pkg p">
+    <div class="pkg-hdr"><div class="pkg-ico p" style="color:#fff">💎</div><div><div class="pkg-name" style="color:#4C1D95">Premium Package — Champions Only</div><div class="pkg-sub">Active · high-frequency · high-value · the 18.5% that generate 56.5% of revenue</div></div></div>
+    <div class="pkg-row">
+      <div class="pm p"><div class="pm-v" style="color:#4C1D95">271,682</div><div class="pm-l">Clients</div></div>
+      <div class="pm p"><div class="pm-v" style="color:#4C1D95">842B IQD</div><div class="pm-l">Total Value</div></div>
+      <div class="pm p"><div class="pm-v" style="color:#059669">8 days</div><div class="pm-l">Avg Recency</div></div>
+      <div class="pm p"><div class="pm-v" style="color:#4C1D95">3.10M IQD</div><div class="pm-l">Avg Spend</div></div>
+    </div>
+    <div class="pkg-box"><h4>🎯 Five Priority Actions</h4>
+      <div class="pgrid">
+        <div class="pa" style="border-left:3px solid #6D28D9"><div class="pa-t">👑 Named VIP Program — Qi Platinum</div><div class="pa-d">Every Champion enrolled automatically. Named tier, visible in app. Personal relationship manager for top 1,000 (>10M IQD spend). Credit limit increase without request. First access to new Qi Card products. Activate using Export 14 account list.</div></div>
+        <div class="pa" style="border-left:3px solid #6D28D9"><div class="pa-t">🛡️ 15-Day Inactivity Alert — P0 Rule</div><div class="pa-d">Any Champion without a transaction in 15 days → immediate CRM alert to account manager. Data shows 21,252 Champions degraded to At Risk in one quarter. This single rule prevents the most expensive churn in the portfolio. Zero budget required — CRM system configuration only.</div></div>
+        <div class="pa" style="border-left:3px solid #6D28D9"><div class="pa-t">💳 Product Upgrade — Rafidain → Corporate</div><div class="pa-d">134,266 Champions are on Rafidain Classic (avg 2.85M IQD each). MC Corporate Champions avg 7.2M IQD — 2.5× higher. Targeted card upgrade campaign. Even 10% conversion = 13,400 clients with potentially doubled spend.</div></div>
+        <div class="pa" style="border-left:3px solid #6D28D9"><div class="pa-t">🌍 International Premium Benefits</div><div class="pa-d">43.1% of Champion volume is e-commerce. Top merchants include Alibaba, SHEIN, TRIP.COM, Air Arabia. Preferential FX rate, travel insurance, airport lounge access. Makes Qi Card the default card for international spend — the highest-value transaction channel.</div></div>
+        <div class="pa" style="border-left:3px solid #6D28D9"><div class="pa-t">🤝 Ambassador Referral Program</div><div class="pa-d">Champion earns 2,000 IQD for each referred friend who activates and transacts 3+ times. Champions trust Qi Card enough to spend 57 transactions on average. Their networks are the lowest-cost acquisition channel available.</div></div>
+        <div class="pa" style="border-left:3px solid #6D28D9"><div class="pa-t">🎁 Milestone Surprise Rewards</div><div class="pa-d">Auto-trigger: 100th transaction → 5,000 IQD cashback surprise. 6-month anniversary → personalized message + benefit. 1-year → exclusive gift or offer. Creates emotional loyalty beyond transactional mechanics. Zero incremental cost at scale.</div></div>
+      </div>
+    </div>
+    <div class="pkg-box"><h4>📊 Projected Outcomes — Premium (12 months)</h4>
+      <div class="out-row"><span class="out-m">Champion retention rate</span><span class="out-v">90–95%</span><span class="out-n">With VIP + inactivity alert: 244K–258K clients retained</span></div>
+      <div class="out-row"><span class="out-m">Card upgrade conversion</span><span class="out-v">8–12%</span><span class="out-n">10.7K–16.1K clients on higher-tier cards → potential 2× spend uplift</span></div>
+      <div class="out-row"><span class="out-m">Referral acquisition</span><span class="out-v">5–8%</span><span class="out-n">13.6K–21.7K new clients from Champion network · avg 283K IQD first spend</span></div>
+      <div class="out-row"><span class="out-m">Value protected</span><span class="out-v">757B–800B IQD</span><span class="out-n">Champion revenue retained vs no-intervention baseline</span></div>
+      <div class="out-row"><span class="out-m">Campaign budget</span><span class="out-v">~543M IQD</span><span class="out-n">2,000 IQD/client · program management · tech setup</span></div>
+      <div class="out-row"><span class="out-m">Net ROI</span><span class="out-v">&gt;1,400x</span><span class="out-n">800B IQD retained ÷ 543M budget · most efficient spend in portfolio</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ GROWTH ══ -->
+<div id="p-growth" class="panel">
+  <div class="sh"><h2>🥇 Growth Package</h2><p>At Risk + Loyal + Needs Attention + Potential Loyalists · 800,440 clients · 601B IQD</p></div>
+
+  <div class="alr am"><span class="ai">🥇</span><div><strong>Growth = recovery + upgrade.</strong> At Risk has the highest recovery ROI (289.6B IQD at stake). Loyal is one promotion away from Champion (40% conversion potential). Needs Attention are salary-cycle users who need timing, not urgency. Potential Loyalists are active but need a frequency habit. These four segments collectively hold 40.3% of portfolio value and are the most actionable upgrade targets.</div></div>
+
+  <div class="pkg g">
+    <div class="pkg-hdr"><div class="pkg-ico g">🥇</div><div><div class="pkg-name" style="color:#78350F">Growth Package</div><div class="pkg-sub">Recover the dormant · upgrade the consistent · build the habit</div></div></div>
+    <div class="pkg-row">
+      <div class="pm g"><div class="pm-v" style="color:#78350F">800,440</div><div class="pm-l">Total Clients</div></div>
+      <div class="pm g"><div class="pm-v" style="color:#78350F">601B IQD</div><div class="pm-l">Total Value</div></div>
+      <div class="pm g"><div class="pm-v" style="color:#D97706">51 days</div><div class="pm-l">Avg Recency</div></div>
+      <div class="pm g"><div class="pm-v" style="color:#78350F">~1.88B IQD</div><div class="pm-l">Est. Budget</div></div>
+    </div>
+    <div class="pkg-box"><h4>🎯 Four Sub-Tracks</h4>
+      <div class="pgrid">
+        <div class="pa" style="border-left:3px solid #DC2626"><div class="pa-t">Track A — At Risk (195,786 clients) · Budget 2,500 IQD/client</div><div class="pa-d">637 premium product clients (Istirad + World Elite + Qi Elite): personal senior call only, no budget cap, no SMS.<br>10,002 Score-155 clients (R1-F5-M5): separate sub-track, 3,500 IQD offer, 48-hour window.<br>Remaining 185,147 bulk: POS/travel offer (SAU/FAB matching their last merchant). 60-day rule: any At Risk client approaching 60 days gets intercepted before full classification.</div></div>
+        <div class="pa" style="border-left:3px solid #059669"><div class="pa-t">Track B — Loyal Customers (265,377 clients) · Budget 1,500 IQD/client</div><div class="pa-d">Champion progress bar in-app ("3 more transactions = Champion").<br>Card upgrade offer: Rafidain Classic holders → Visa/MC tier upgrade.<br>Cross-sell window: salary transfer, savings, insurance — 6–20 txn clients have enough trust.<br>Monthly frequency reward for 6+ transactions/month.</div></div>
+        <div class="pa" style="border-left:3px solid #EA580C"><div class="pa-t">Track C — Needs Attention (206,288 clients) · Budget 800 IQD/client</div><div class="pa-d">ALL offers sent 25th–28th of month only — salary-cycle timing confirmed by Export 20 (81.4% in 2–5 txn bucket).<br>Monthly spend summary on 1st of each month.<br>60-day auto-escalation to At Risk track if no transaction.<br>Do NOT use urgency language — these are structural salary-cycle clients, not churners.</div></div>
+        <div class="pa" style="border-left:3px solid #0891B2"><div class="pa-t">Track D — Potential Loyalists (133,089 clients) · Budget 1,200 IQD/client</div><div class="pa-d">Frequency reward ladder: 5 transactions = 500 IQD, shown as in-app progress bar.<br>E-commerce merchant discovery push (56.9% are digital users).<br>Card upgrade invitation (same as Loyal track).<br>Second card / digital supplement offer.</div></div>
+      </div>
+    </div>
+    <div class="pkg-box"><h4>📊 Projected Outcomes — Growth Package (12 months)</h4>
+      <div class="out-row"><span class="out-m">At Risk Premium recovery</span><span class="out-v">50–70%</span><span class="out-n">320–446 clients recovered · +4.2B–5.9B IQD</span></div>
+      <div class="out-row"><span class="out-m">At Risk Score-155 recovery</span><span class="out-v">30–40%</span><span class="out-n">3,000–4,000 clients recovered · +8B–10.7B IQD</span></div>
+      <div class="out-row"><span class="out-m">At Risk Bulk recovery</span><span class="out-v">25–35%</span><span class="out-n">46K–65K clients · +68B–96B IQD reactivated</span></div>
+      <div class="out-row"><span class="out-m">Loyal → Champion upgrade</span><span class="out-v">15–20%</span><span class="out-n">39.8K–53.1K clients · +123B–164B IQD in Champion tier</span></div>
+      <div class="out-row"><span class="out-m">Needs Attn. retention</span><span class="out-v">45–55%</span><span class="out-n">92.8K–113.5K clients protected from At Risk</span></div>
+      <div class="out-row"><span class="out-m">Pot. Loyalists → Loyal</span><span class="out-v">20–30%</span><span class="out-n">26.6K–39.9K upgrade · +25.3B–37.9B IQD</span></div>
+      <div class="out-row"><span class="out-m">Total budget</span><span class="out-v">~1.88B IQD</span><span class="out-n">At Risk 489M · Loyal 398M · Needs Attn. 165M · Pot.Loyal. 160M · Premium outreach 25M</span></div>
+      <div class="out-row"><span class="out-m">Net ROI</span><span class="out-v">147x–165x</span><span class="out-n">~277B–314B IQD impact ÷ 1.88B budget</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ACTIVATION ══ -->
+<div id="p-activation" class="panel">
+  <div class="sh"><h2>🥈 Activation Package</h2><p>New Customers + Regular + Hibernating 3+ txns · 163,009 real campaign targets · 33.4B IQD</p></div>
+
+  <div class="alr am"><span class="ai">🥈</span><div><strong>Activation ≠ all low-value segments.</strong> The 166,888 Hibernating single-transaction clients are not campaign targets — they are failed onboardings who go to a 50 IQD survey only. Real Activation targets are clients who showed genuine intent (2+ transactions) but haven't built a habit yet. New Customers (283K IQD avg spend) are the highest-ROI group in this tier.</div></div>
+
+  <div class="pkg s">
+    <div class="pkg-hdr"><div class="pkg-ico s">🥈</div><div><div class="pkg-name" style="color:#475569">Activation Package</div><div class="pkg-sub">Build the first habit · onboard correctly · recover the real dormant</div></div></div>
+    <div class="pkg-row">
+      <div class="pm s"><div class="pm-v" style="color:#475569">163,009</div><div class="pm-l">Real Targets</div></div>
+      <div class="pm s"><div class="pm-v" style="color:#475569">33.4B IQD</div><div class="pm-l">Historical Value</div></div>
+      <div class="pm s"><div class="pm-v" style="color:#D97706">87 days</div><div class="pm-l">Avg Recency</div></div>
+      <div class="pm s"><div class="pm-v" style="color:#475569">~100M IQD</div><div class="pm-l">Est. Budget</div></div>
+    </div>
+    <div class="pkg-box"><h4>🎯 Four Sub-Tracks</h4>
+      <div class="pgrid">
+        <div class="pa"><div class="pa-t">Track A — New Customers (53,431) · Budget 800 IQD/client · Priority 1</div><div class="pa-d">7-day automated onboarding: Day 1 welcome, Day 3 e-commerce offer (78.3% digital), Day 7 second transaction incentive. 283K IQD avg spend = highest ROI per client in this tier. Match offer to first transaction merchant category.</div></div>
+        <div class="pa"><div class="pa-t">Track B — Regular Customers (56,506) · Budget 500 IQD/client · Priority 2</div><div class="pa-d">Second transaction trigger. 41-day recency = still warm. E-commerce offer tied to first merchant. Target: 30% convert to Potential Loyalists. Digital channel only. Budget: 28.3M IQD.</div></div>
+        <div class="pa"><div class="pa-t">Track C — Hibernating 3–5 txns (51,078) · Budget 500 IQD/client · Priority 3</div><div class="pa-d">Merchant-specific e-commerce reactivation offer. 55.5% were e-commerce users — offer at SHEIN, Alibaba, Digital Zone. NOT a generic "we miss you" — tie it to their last used merchant. Expected recovery 20–28%.</div></div>
+        <div class="pa"><div class="pa-t">Track D — Hibernating 6+ txns (12,494) · Budget 1,500 IQD/client · Priority 3</div><div class="pa-d">Highest-value dormant in Activation. Personalized offer tied to top merchant. Expected recovery 30–35%. Budget: 18.7M IQD.</div></div>
+      </div>
+    </div>
+    <div class="pkg-box"><h4>Survey-Only — Hibernating 1-txn (166,888 clients) · 50 IQD each · Not a campaign</h4>
+      <div class="pa"><div class="pa-t">Why 1-txn Hibernating clients are NOT campaign targets</div><div class="pa-d">66K IQD avg spend. Made 1 transaction and stopped. These are failed onboardings, not churned customers. The correct approach is a 1-tap SMS survey: "Why didn't you continue using Qi Card?" with 3 predefined options. Budget: 8.3M IQD. Goal: product intelligence. Every answer that comes back will reveal a product gap, UX issue, or acceptance problem worth fixing at the platform level — more valuable than any reactivation conversion from this group.</div></div>
+    </div>
+    <div class="pkg-box"><h4>📊 Projected Outcomes — Activation Package (12 months)</h4>
+      <div class="out-row"><span class="out-m">New → Regular / Pot. Loyal.</span><span class="out-v">55–65%</span><span class="out-n">29K–35K converted · +8.2B–9.9B IQD to active portfolio</span></div>
+      <div class="out-row"><span class="out-m">Regular → Pot. Loyalists</span><span class="out-v">25–35%</span><span class="out-n">14K–20K move up · +2.4B–3.4B IQD</span></div>
+      <div class="out-row"><span class="out-m">Hibernating 3+ recovery</span><span class="out-v">20–30%</span><span class="out-n">12.7K–19.1K reactivated · +1.6B–2.4B IQD</span></div>
+      <div class="out-row"><span class="out-m">Survey response rate</span><span class="out-v">15–25%</span><span class="out-n">25K–42K responses = platform intelligence</span></div>
+      <div class="out-row"><span class="out-m">Total budget</span><span class="out-v">~100M IQD</span><span class="out-n">A: 42.7M · B: 28.3M · C: 25.5M · D: 18.7M · Survey: 8.3M</span></div>
+      <div class="out-row"><span class="out-m">Net ROI</span><span class="out-v">122x–138x</span><span class="out-n">~12.2B–15.7B IQD unlocked ÷ 100M budget</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ OUTCOMES ══ -->
+<div id="p-outcomes" class="panel">
+  <div class="sh"><h2>Combined Outcomes — All Three Packages</h2><p>12-month projection · corrected tier structure · data-verified estimates</p></div>
+  <div class="g4">
+    <div class="kpi gr"><div class="kl">Total Revenue Impact</div><div class="kv">+289B–336B IQD</div><div class="ks">Retained + recovered + upgraded across all packages</div></div>
+    <div class="kpi gr"><div class="kl">Clients Activated / Upgraded</div><div class="kv">~200K–250K</div><div class="ks">Moved to higher segment or reactivated</div></div>
+    <div class="kpi am"><div class="kl">Total Campaign Budget</div><div class="kv">~2.52B IQD</div><div class="ks">Premium 543M + Growth 1.88B + Activation 100M</div></div>
+    <div class="kpi pu"><div class="kl">Blended ROI</div><div class="kv">115x–134x</div><div class="ks">Total impact ÷ total spend</div></div>
+  </div>
+
+  <div class="card"><div class="ct">Full outcomes matrix — all sub-tracks · priority order · data-grounded estimates</div>
+    <div class="tw" style="margin-top:8px">
+      <table><thead><tr><th>#</th><th>Sub-Track</th><th>Package</th><th>Targets</th><th>Response</th><th>Budget/Client</th><th>Revenue Impact</th><th>ROI</th><th>Priority</th></tr></thead>
+      <tbody id="out-tbl"></tbody></table>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card"><div class="ct">Revenue impact by package (B IQD)</div><div class="cs">Growth generates 83% of total impact · Premium generates 13% through retention of 842B IQD base</div><div style="position:relative;height:220px"><canvas id="ch-out1"></canvas></div></div>
+    <div class="card"><div class="ct">Budget allocation vs expected impact</div><div class="cs">Premium has highest absolute ROI (1,400x) · Growth has highest absolute impact · Activation most efficient new-value conversion</div><div style="position:relative;height:220px"><canvas id="ch-out2"></canvas></div></div>
+  </div>
+
+  <div class="alr qi"><span class="ai">🎯</span><div><strong>Execution sequence if budget is constrained:</strong> (1) Champions 15-day inactivity alert — zero cost, zero delay, must activate today. (2) At Risk Premium personal calls — 25M IQD, returns 4–6B IQD. (3) Champions VIP program — 543M, protects 842B. (4) Loyal upgrade campaign — 398M, unlocks 123B. (5) At Risk bulk recovery — 489M, recovers 72–101B. (6) Growth remainder — 975M for Needs Attn. + Pot. Loyalists. (7) Activation — 100M for New + Regular + Hib. 3+. Every step returns more than 100× its cost.</div></div>
+</div>
+
+
+<!-- ══ CARD TYPES ══ -->
+<div id="p-cardtypes" class="panel">
+  <div class="sh"><h2>💳 Card Type Portfolio — Overall Distribution</h2><p>4 card types · Debit dominates clients · Credit and World Elite (512901) are small but premium-spend outliers</p></div>
+
+  <div class="alr qi"><span class="ai">💳</span><div><strong>Four card types in the portfolio:</strong> <strong>Debit</strong> (78.5% of clients, 84.9% of value) is the backbone. <strong>PrePaid</strong> (20.9% of clients, 12.1% of value) is the MasterCard ISC Travel card — used heavily by travelers. <strong>Credit</strong> (0.4% of clients, 2.0% of value) includes Istirad Card and Qi Elite — tiny count but enormous avg spend (11–16M IQD per client). <strong>512901</strong> is the World Elite / Platinum Minawbina category — 0.12% of clients but 0.99% of value with the highest avg ticket in the entire portfolio.</div></div>
+
+  <div class="g4">
+    <div class="kpi dk"><div class="kl">💳 Debit</div><div class="kv">1,156,740</div><div class="ks">78.5% of clients · 84.9% of value · 1.265T IQD</div></div>
+    <div class="kpi am"><div class="kl">💳 PrePaid</div><div class="kv">308,192</div><div class="ks">20.9% of clients · 12.1% of value · 180.6B IQD</div></div>
+    <div class="kpi pu"><div class="kl">💳 Credit</div><div class="kv">5,989</div><div class="ks">0.4% of clients · 2.0% of value · 30.1B IQD</div></div>
+    <div class="kpi gr"><div class="kl">💳 World Elite (512901)</div><div class="kv">1,805</div><div class="ks">0.12% of clients · 0.99% of value · 14.7B IQD</div></div>
+  </div>
+
+  <div class="g2">
+    <div class="card"><div class="ct">Client share by card type</div><div class="cs">Debit dominates at 78.5% · PrePaid is 20.9% (MasterCard ISC Travel)</div><div style="position:relative;height:220px"><canvas id="ch-ct1"></canvas></div></div>
+    <div class="card"><div class="ct">Value share by card type (B IQD)</div><div class="cs">Credit and 512901 are tiny by count but punch above weight in value per client</div><div style="position:relative;height:220px"><canvas id="ch-ct2"></canvas></div></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">Avg spend per client by card type — the premium outliers</div>
+    <div class="cs">Credit cardholders avg 5.03M IQD · World Elite avg 8.16M IQD · Debit avg 1.09M · PrePaid avg 586K</div>
+    <div style="position:relative;height:180px"><canvas id="ch-ct3"></canvas></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">Card type deep dive — products within each type</div>
+    <div class="tw" style="margin-top:8px">
+      <table><thead><tr><th>Card Type</th><th>Product Name</th><th>Clients</th><th>Volume (IQD)</th><th>Avg Spend per Client</th><th>% of Card Type Volume</th><th>Strategic Note</th></tr></thead>
+      <tbody>
+        <tr style="background:#1C234010"><td rowspan="8" style="font-weight:800;color:#1C2340;vertical-align:middle">💳 Debit<br><span style="font-size:9px;font-weight:400;color:var(--mt)">1,156,740 clients<br>1.265T IQD</span></td><td style="font-weight:700">Rafidain Classic</td><td>785,910</td><td>705.0B IQD</td><td style="color:#D97706;font-weight:700">896K IQD</td><td>55.7%</td><td style="font-size:10px;color:var(--mt)">Mass-market backbone — 53.4% of all clients · entry-level card</td></tr>
+        <tr><td style="font-weight:700">Visa Classic Rafidain</td><td>203,433</td><td>217.5B IQD</td><td style="color:#D97706;font-weight:700">1.07M IQD</td><td>17.2%</td><td style="font-size:10px;color:var(--mt)">Mid-tier · 19% higher avg spend than Rafidain Classic</td></tr>
+        <tr><td style="font-weight:700">MasterQi Barakatna-M</td><td>48,613</td><td>92.1B IQD</td><td style="color:#059669;font-weight:700">1.89M IQD</td><td>7.3%</td><td style="font-size:10px;color:var(--mt)">Premium debit · 2.1× Rafidain avg spend</td></tr>
+        <tr><td style="font-weight:700">MC Corporate Merchant</td><td>27,349</td><td>90.9B IQD</td><td style="color:#059669;font-weight:700">3.32M IQD</td><td>7.2%</td><td style="font-size:10px;color:var(--mt)">Business/corporate card · highest debit avg spend</td></tr>
+        <tr><td style="font-weight:700">MasterQi Saving-M</td><td>25,134</td><td>75.4B IQD</td><td style="color:#059669;font-weight:700">3.00M IQD</td><td>6.0%</td><td style="font-size:10px;color:var(--mt)">Savings-linked · high avg spend profile</td></tr>
+        <tr><td style="font-weight:700">MasterQi Tiffsal-M</td><td>43,071</td><td>31.9B IQD</td><td>741K IQD</td><td>2.5%</td><td style="font-size:10px;color:var(--mt)">Mid-tier debit product</td></tr>
+        <tr><td style="font-weight:700">MC Classic Rafidain</td><td>4,395</td><td>25.3B IQD</td><td style="color:#059669;font-weight:700">5.76M IQD</td><td>2.0%</td><td style="font-size:10px;color:var(--mt)">Small count but very high avg spend — legacy premium debit</td></tr>
+        <tr><td style="font-weight:700">EGI Gaming Card</td><td>9,375</td><td>16.5B IQD</td><td style="color:#D97706;font-weight:700">1.76M IQD</td><td>1.3%</td><td style="font-size:10px;color:var(--mt)">Gaming-specific · high spend relative to client count</td></tr>
+        <tr style="background:#FFF3A310"><td rowspan="2" style="font-weight:800;color:#D97706;vertical-align:middle">💳 PrePaid<br><span style="font-size:9px;font-weight:400;color:var(--mt)">308,192 clients<br>180.6B IQD</span></td><td style="font-weight:700">MasterCard ISC Travel</td><td>302,876</td><td>175.7B IQD</td><td>580K IQD</td><td>97.3%</td><td style="font-size:10px;color:var(--mt)">Near-monopoly within PrePaid · travel and payroll card · 46.8% at-risk rate in SAU cluster</td></tr>
+        <tr style="background:#FFF3A310"><td style="font-weight:700">MasterCard ISC Branded</td><td>5,316</td><td>4.8B IQD</td><td>906K IQD</td><td>2.7%</td><td style="font-size:10px;color:var(--mt)">Branded variant · slightly higher avg ticket</td></tr>
+        <tr style="background:#F5F3FF10"><td rowspan="4" style="font-weight:800;color:#6D28D9;vertical-align:middle">💳 Credit<br><span style="font-size:9px;font-weight:400;color:var(--mt)">5,989 clients<br>30.1B IQD</span></td><td style="font-weight:700">Istirad Card</td><td>914</td><td>24.3B IQD</td><td style="color:#DC2626;font-weight:700">26.6M IQD</td><td>80.8%</td><td style="font-size:10px;color:var(--mt)">Top credit product · 26.6M avg spend · 221 of 914 are At Risk (8.5B IQD dormant)</td></tr>
+        <tr style="background:#F5F3FF10"><td style="font-weight:700">Qi Elite Main</td><td>174</td><td>3.5B IQD</td><td style="color:#DC2626;font-weight:700">20.3M IQD</td><td>11.7%</td><td style="font-size:10px;color:var(--mt)">Elite credit · 174 clients total · 37 are At Risk</td></tr>
+        <tr style="background:#F5F3FF10"><td style="font-weight:700">Qi Elite Supplementary</td><td>10</td><td>226M IQD</td><td style="color:#DC2626;font-weight:700">22.6M IQD</td><td>0.8%</td><td style="font-size:10px;color:var(--mt)">Supplementary card · tiny count, very high avg</td></tr>
+        <tr style="background:#F5F3FF10"><td style="font-weight:700">MC Credit Classic</td><td>4,866</td><td>1.3B IQD</td><td>276K IQD</td><td>4.5%</td><td style="font-size:10px;color:var(--mt)">Entry-level credit · mass count but low avg spend for a credit product</td></tr>
+        <tr style="background:#ECFDF510"><td rowspan="2" style="font-weight:800;color:#059669;vertical-align:middle">💳 World Elite<br>(512901)<br><span style="font-size:9px;font-weight:400;color:var(--mt)">1,805 clients<br>14.7B IQD</span></td><td style="font-weight:700">World Elite</td><td>1,531</td><td>14.1B IQD</td><td style="color:#DC2626;font-weight:700">9.18M IQD</td><td>95.4%</td><td style="font-size:10px;color:var(--mt)">Ultra-premium · 1,531 clients · avg 9.18M IQD · 379 are At Risk (3.5B IQD dormant)</td></tr>
+        <tr style="background:#ECFDF510"><td style="font-weight:700">Platinum Minawbina MC</td><td>273</td><td>678.7M IQD</td><td>2.49M IQD</td><td>4.6%</td><td style="font-size:10px;color:var(--mt)">Platinum tier · 273 clients · smaller avg than World Elite</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CARDS × SEGMENTS ══ -->
+<div id="p-cardseg" class="panel">
+  <div class="sh"><h2>📊 Card Type × Segment Cross-Analysis</h2><p>How each card type distributes across segments — and what it reveals about upgrade and recovery opportunities</p></div>
+
+  <div class="alr rd"><span class="ai">🔑</span><div><strong>Three strategic findings:</strong> (1) <strong>Rafidain Classic Debit</strong> is the entry point for almost every segment — it is the default card that clients arrive on and must be upgraded. (2) <strong>Credit and World Elite cards</strong> are disproportionately concentrated in Champions but have alarming At Risk representation (221 Istirad + 379 World Elite). (3) <strong>PrePaid (ISC Travel)</strong> is heavily at-risk in the SAU/UAE travel cluster — 22.4% of At Risk segment holds a PrePaid card, contributing to the international banking merchant pattern.</div></div>
+
+  <div class="card"><div class="ct">Card type share per segment — clients (%)</div><div class="cs">Debit dominates all segments · PrePaid is highest in Champions (24.0%) · Credit share is tiny but value-weighted</div><div style="position:relative;height:250px"><canvas id="ch-cs1"></canvas></div></div>
+
+  <div class="card"><div class="ct">Card type share per segment — volume (%)</div><div class="cs">Credit and 512901 punch above client weight especially in Champions (3.9% of clients → much higher value contribution)</div><div style="position:relative;height:250px"><canvas id="ch-cs2"></canvas></div></div>
+
+  <div class="card">
+    <div class="ct">Full card type × segment matrix — clients, volume, avg spend per client</div>
+    <div class="tw" style="margin-top:8px">
+      <table>
+        <thead><tr><th>Segment</th><th>Card Type</th><th>Clients</th><th>% of Segment</th><th>Volume (IQD)</th><th>% of Seg. Vol.</th><th>Avg Spend / Client</th><th>Strategic Note</th></tr></thead>
+        <tbody id="cs-tbl"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card"><div class="ct">Credit + World Elite clients — where they sit across segments</div><div class="cs">Champions hold 58% of all premium credit/WE clients · At Risk holds 25% — 637 premium clients dormant</div><div style="position:relative;height:230px"><canvas id="ch-cs3"></canvas></div></div>
+    <div class="card"><div class="ct">PrePaid (ISC Travel) distribution by segment</div><div class="cs">Champions largest PrePaid holder (65K) · At Risk holds 43.9K PrePaid clients (the SAU/UAE travel cluster)</div><div style="position:relative;height:230px"><canvas id="ch-cs4"></canvas></div></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">Upgrade opportunity — Rafidain Classic clients per segment with avg spend comparison</div>
+    <div class="cs">If Champions on Rafidain Classic (134K clients, 2.85M avg) upgraded to MC Corporate (7.2M avg), potential uplift is enormous</div>
+    <div style="position:relative;height:210px"><canvas id="ch-cs5"></canvas></div>
+  </div>
+
+  <div class="alr gr"><span class="ai">🎯</span><div><strong>Card upgrade strategy by segment:</strong> Champions on Rafidain Classic (134,266 clients, 2.85M IQD avg) → offer MC Corporate or Istirad upgrade. Loyal on Rafidain Classic (100,575 clients, 676K avg) → offer Visa Classic or MC Barakatna. Needs Attention and Potential Loyalists on Rafidain Classic (~85% of each segment) → a card upgrade is the single highest-leverage engagement tool because higher-tier cards are correlated with 2–5× higher spend, not just higher limits. The card IS the behavior change mechanism.</div></div>
+</div>
+
+</div><!-- /main -->
+
+<footer>
+  <svg width="18" height="18" viewBox="0 0 62 61" fill="none"><path d="M30.9229 50.4682C19.8704 50.4682 10.9271 41.5373 10.9271 30.5C10.9271 19.4627 19.8704 10.5318 30.9229 10.5318C41.9753 10.5318 50.9186 19.4627 50.9186 30.5C50.9186 33.2804 50.328 35.9765 49.3155 38.3356L57.0776 46.087C59.8618 41.5373 61.3805 36.145 61.3805 30.4157C61.4648 13.6492 47.7969 0 30.9229 0C14.0488 0 0.380859 13.6492 0.380859 30.5C0.380859 47.3508 14.0488 61 30.9229 61C36.66 61 42.0597 59.3992 46.6157 56.703L38.7693 48.8674C36.4069 49.8785 33.7071 50.4682 30.9229 50.4682ZM25.0169 30.5C25.0169 33.7859 27.6324 36.3978 30.9229 36.3978C34.2133 36.3978 36.8288 33.7859 36.8288 30.5C36.8288 27.2141 34.2133 24.6022 30.9229 24.6022C27.6324 24.6022 25.0169 27.2141 25.0169 30.5ZM59.8618 51.9848C61.8867 54.0069 61.8867 57.3771 59.8618 59.3992C57.8369 61.4213 54.4621 61.4213 52.4372 59.3992L36.9975 43.9807C34.9726 41.9586 34.9726 38.5884 36.9975 36.5663C39.0224 34.5442 42.3972 34.5442 44.4221 36.5663L59.8618 51.9848Z" fill="#F3CD00"/></svg>
+  <strong>Qi Card</strong><span>Client Segmentation Strategy v2 · Pareto-correct Premium tier · Oct 2025 – Apr 2026 · 1,472,352 clients · 1.490T IQD</span>
+</footer>
+
+<script>
+var QI='#F3CD00',NAVY='#1C2340';
+function sw(t){
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('on')});
+  document.querySelectorAll('.tb').forEach(function(b){b.classList.remove('on')});
+  document.getElementById('p-'+t).classList.add('on');
+  var ts=['pareto','accounts','merchants','premium','growth','activation','cardtypes','cardseg','outcomes'];
+  document.querySelectorAll('.tb')[ts.indexOf(t)].classList.add('on');
+}
+function mkC(id,type,labels,datasets,opts){
+  var el=document.getElementById(id);if(!el)return;
+  var o={responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+c.raw}}}},
+    scales:{x:{ticks:{color:'#6B7280',font:{size:9}},grid:{color:'rgba(0,0,0,.04)'}},y:{ticks:{color:'#6B7280',font:{size:9}},grid:{color:'rgba(0,0,0,.04)'}}}};
+  if(opts){
+    if(opts.idx)o.indexAxis=opts.idx;
+    if(opts.nosc)delete o.scales;
+    if(opts.cut){o.cutout=opts.cut;delete o.scales;}
+    if(opts.fmt)o.plugins.tooltip={callbacks:{label:function(c){return ' '+opts.fmt(c.raw)}}};
+    if(opts.leg)o.plugins.legend={display:true,position:'top',labels:{color:'#6B7280',font:{size:9},boxWidth:8}};
+    if(opts.yB){o.scales.y={ticks:{color:'#6B7280',font:{size:9},callback:function(v){return v+'B'}},grid:{color:'rgba(0,0,0,.04)'}};}
+    if(opts.y100){o.scales.y={min:0,max:100,ticks:{color:'#6B7280',font:{size:9},callback:function(v){return v+'%'}},grid:{color:'rgba(0,0,0,.04)'}};}
+  }
+  return new Chart(el,{type:type,data:{labels:labels,datasets:datasets},options:o});
+}
+window.onload=function(){
+
+  // PARETO rows
+  var segs=[
+    {n:'🏆 Champions',clients:18.5,val:56.5,cum_c:18.5,cum_v:56.5,c:'#6D28D9'},
+    {n:'⚠️ At Risk',clients:13.3,val:19.4,cum_c:31.7,cum_v:75.9,c:'#DC2626'},
+    {n:'💛 Loyal Customers',clients:18.0,val:16.9,cum_c:49.8,cum_v:92.8,c:'#059669'},
+    {n:'👀 Needs Attention',clients:14.0,val:2.5,cum_c:63.8,cum_v:95.3,c:'#EA580C'},
+    {n:'😴 Hibernating',clients:19.7,val:1.6,cum_c:83.5,cum_v:97.0,c:'#D97706'},
+    {n:'🌱 Pot. Loyalists',clients:9.0,val:1.4,cum_c:92.5,cum_v:98.4,c:'#0891B2'},
+    {n:'🆕 New Customers',clients:3.6,val:1.0,cum_c:96.2,cum_v:99.4,c:'#0369A1'},
+    {n:'🔵 Regular',clients:3.8,val:0.6,cum_c:100.0,cum_v:100.0,c:'#94A3B8'}
+  ];
+  var pr=document.getElementById('pareto-rows');
+  if(pr){segs.forEach(function(s){
+    pr.innerHTML+='<div class="pareto-row"><span class="pareto-seg" style="color:'+s.c+'">'+s.n+'</span><div class="pareto-bar-wrap"><div class="pareto-bar" style="width:'+s.val*2+'px;background:'+s.c+';opacity:0.8"></div><span style="font-size:10px;color:'+s.c+';font-weight:700;min-width:40px">'+s.val.toFixed(1)+'%</span><span style="font-size:10px;color:var(--mt)">of value</span></div><span class="pareto-num">'+s.clients.toFixed(1)+'% of clients | cumulative value: '+s.cum_v.toFixed(1)+'%</span></div>';
+  });}
+
+  // Pareto charts
+  mkC('ch-pareto1','line',
+    ['0%','18.5%\nChampions','31.7%\n+At Risk','49.8%\n+Loyal','63.8%','83.5%','100%'],
+    [{data:[0,56.5,75.9,92.8,95.3,97.0,100],borderColor:'#6D28D9',backgroundColor:'rgba(109,40,217,.1)',fill:true,tension:.3,pointRadius:4,borderWidth:2}],
+    {fmt:function(v){return v+'% of value'},yB:false,y100:true});
+
+  mkC('ch-pareto2','doughnut',
+    ['💎 Premium\n271K clients\n842B IQD','🥇 Growth\n800K clients\n601B IQD','🥈 Activation\n163K real targets\n33B IQD','Survey Only\n167K · 11B IQD'],
+    [{data:[56.5,40.3,2.2,0.7*2],backgroundColor:['#6D28D9','#D97706','#94A3B8','#E5E7EB'],borderWidth:2,borderColor:'#fff'}],
+    {cut:'55%',nosc:true,fmt:function(v){return v+'% of value'}});
+
+  // ACCOUNTS tab
+  var accs=[
+    {acc:'715****5622',score:'135',first:'2025-10-15',last:'2025-10-19',days:194,freq:4,  mon:166.9,merch:'AGHA RESTAURENT'},
+    {acc:'554****3109',score:'255',first:'2025-10-06',last:'2026-02-12',days:78, freq:123, mon:121.9,merch:'PARK INN R A HOTEOL'},
+    {acc:'801****5736',score:'255',first:'2025-10-30',last:'2026-02-15',days:75, freq:89,  mon:115.3,merch:'SHEIN.COM'},
+    {acc:'874****8547',score:'255',first:'2025-10-03',last:'2026-02-23',days:67, freq:111, mon:114.4,merch:'PARK INN R A HOTEOL'},
+    {acc:'801****3226',score:'255',first:'2025-10-30',last:'2026-02-26',days:64, freq:91,  mon:114.3,merch:'SHEIN.COM'},
+    {acc:'801****2244',score:'255',first:'2025-10-30',last:'2026-02-24',days:66, freq:90,  mon:113.5,merch:'SHEIN.COM'},
+    {acc:'801****2657',score:'255',first:'2025-10-01',last:'2026-02-16',days:74, freq:54,  mon:105.7,merch:'WAFEDEN MINISTRY OF HI'},
+    {acc:'882****3111',score:'255',first:'2026-01-15',last:'2026-02-04',days:86, freq:59,  mon:104.7,merch:'ABTSMTK DENTAL'},
+    {acc:'801****4234',score:'255',first:'2025-11-06',last:'2026-02-24',days:66, freq:85,  mon:100.8,merch:'SHEIN.COM'},
+    {acc:'608****0994',score:'255',first:'2025-10-01',last:'2026-02-09',days:81, freq:46,  mon:99.9, merch:'AJET HAVA TASIMACILIGI'},
+    {acc:'867****2553',score:'255',first:'2025-10-01',last:'2026-02-04',days:86, freq:52,  mon:99.5, merch:'ABTSMTK DENTAL'},
+    {acc:'260****6890',score:'255',first:'2025-10-01',last:'2026-02-22',days:68, freq:43,  mon:97.1, merch:'ABTSMTK DENTAL'},
+    {acc:'985****1275',score:'255',first:'2025-10-01',last:'2026-02-05',days:85, freq:293, mon:88.1, merch:'SALAMAIR TOPUP'},
+    {acc:'860****8448',score:'255',first:'2025-10-01',last:'2026-02-27',days:63, freq:58,  mon:87.7, merch:'TIKTOK ADS'},
+    {acc:'699****1494',score:'255',first:'2025-10-01',last:'2026-02-15',days:75, freq:221, mon:85.3, merch:'TRAVEL DESIGNER DMCC'},
+    {acc:'685****3134',score:'255',first:'2025-10-01',last:'2026-02-04',days:86, freq:37,  mon:85.0, merch:'ABTSMTK DENTAL'},
+    {acc:'801****7329',score:'255',first:'2025-10-01',last:'2026-02-13',days:77, freq:38,  mon:82.3, merch:'LE MERIDIEN TOWERS'},
+    {acc:'623****7174',score:'255',first:'2025-10-01',last:'2026-02-04',days:86, freq:36,  mon:79.9, merch:'ABTSMTK DENTAL'},
+    {acc:'801****9596',score:'255',first:'2025-10-01',last:'2026-02-08',days:82, freq:63,  mon:79.2, merch:'SHEIN.COM'},
+    {acc:'558****3384',score:'255',first:'2025-10-01',last:'2026-02-04',days:86, freq:41,  mon:78.1, merch:'ASYTK GENERAL SURGERY'},
+    {acc:'801****4521',score:'255',first:'2025-10-02',last:'2026-02-10',days:80, freq:55,  mon:77.5, merch:'SHEIN.COM'},
+    {acc:'720****8832',score:'255',first:'2025-10-01',last:'2026-02-14',days:76, freq:48,  mon:76.8, merch:'ALIBABA.COM'},
+    {acc:'453****1197',score:'255',first:'2025-10-01',last:'2026-02-05',days:85, freq:62,  mon:76.3, merch:'SHEIN.COM'},
+    {acc:'801****6043',score:'255',first:'2025-10-01',last:'2026-02-13',days:77, freq:39,  mon:75.9, merch:'SAU'},
+    {acc:'612****4409',score:'255',first:'2025-10-01',last:'2026-02-07',days:83, freq:44,  mon:75.3, merch:'PARK INN R A HOTEOL'}
+  ];
+  var at=document.getElementById('acc-tbl');
+  if(at){accs.forEach(function(a,i){
+    var tier=a.mon>110?'🔴 Crisis':a.mon>90?'🟠 Critical':'🟡 High';
+    var tc=a.mon>110?'#DC2626':a.mon>90?'#EA580C':'#D97706';
+    var rc=a.days>100?'#DC2626':a.days>70?'#D97706':'#D97706';
+    at.innerHTML+='<tr><td style="color:var(--mt);font-size:10px">'+(i+1)+'</td>'
+      +'<td><span class="acc-badge">'+a.acc+'</span></td>'
+      +'<td style="text-align:center"><span style="font-family:monospace;font-size:11px;font-weight:700;color:#6D28D9">'+a.score+'</span></td>'
+      +'<td style="font-size:10px;color:var(--mt)">'+a.first+'</td>'
+      +'<td style="font-size:10px;color:var(--mt)">'+a.last+'</td>'
+      +'<td style="font-weight:700;color:'+rc+'">'+a.days+' days</td>'
+      +'<td>'+a.freq.toLocaleString()+'</td>'
+      +'<td style="font-weight:800;color:'+tc+'">'+a.mon.toFixed(1)+'M</td>'
+      +'<td><span style="font-size:10px;font-weight:700;color:'+tc+'">'+tier+'</span></td>'
+      +'<td style="font-size:10px;max-width:140px">'+a.merch+'</td></tr>';
+  });}
+
+  mkC('ch-acc1','bar',accs.map(function(a){return a.acc}),
+    [{data:accs.map(function(a){return +a.mon.toFixed(1)}),
+      backgroundColor:accs.map(function(a){return a.mon>110?'#DC2626':a.mon>90?'#EA580C':'#D97706'}),borderRadius:3}],
+    {fmt:function(v){return v+'M IQD total spend'}});
+
+  mkC('ch-acc2','bar',
+    ['SHEIN.COM','ALIBABA.COM','WWW.SHEIN.COM','TIKTOK','PEGASUS','DENTAL CLINICS','SAU','HOTELS','TIKTOK ADS','TRAVEL AGCY'],
+    [{data:[222,46,44,37,35,81,22,26,11,20],backgroundColor:['#6D28D9','#059669','#6D28D9','#0891B2','#D97706','#DC2626','#DC2626','#D97706','#0891B2','#059669'],borderRadius:4}],
+    {fmt:function(v){return v+' At Risk clients'}});
+
+  mkC('ch-acc3','scatter',null,
+    [{data:accs.map(function(a){return {x:a.days,y:+a.mon.toFixed(1),label:a.acc}}),
+      backgroundColor:accs.map(function(a){return a.mon>110?'rgba(220,38,38,.8)':a.mon>90?'rgba(234,88,12,.8)':'rgba(217,119,6,.8)'}),
+      pointRadius:7,pointHoverRadius:10}],
+    {fmt:function(v){return v.toFixed ? v.toFixed(1)+'M IQD' : ''}});
+
+  // MERCHANT charts
+  mkC('ch-merch1','bar',
+    ['SHEIN+WWW','ALIBABA','PUBG+TIKTOK','DIGITAL ZONE+APPLE','SAU','FAB+ADIB','ALP*PERSONAL','BOOKING+TRIP','PEGASUS+AIR','ALIPAY'],
+    [
+      {label:'Volume (B IQD)',data:[84.7,45.8,86.1,44.4,25.4,21.9,23.9,12.0,10.9,6.6],backgroundColor:'rgba(109,40,217,.6)',borderRadius:3},
+      {label:'Champion % ×10',data:[37.4,46.2,41.0,27.5,11.8,21.3,44.8,53.9,49.5,66.2],backgroundColor:'rgba(5,150,105,.5)',borderRadius:3},
+      {label:'At Risk % ×10',data:[22.0,15.3,9.3,8.0,46.8,45.2,22.4,23.3,22.5,0.4],backgroundColor:'rgba(220,38,38,.5)',borderRadius:3}
+    ],{leg:true,fmt:function(v){return v}});
+
+  var months=['Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26','Apr 26'];
+  mkC('ch-merch2','line',months,
+    [{label:'SAU',data:[1.81,2.01,2.68,6.89,10.04,1.84,0.14],borderColor:'#DC2626',backgroundColor:'rgba(220,38,38,.1)',fill:true,tension:.3,pointRadius:4,borderWidth:2},
+     {label:'FAB',data:[0.54,0.04,0.44,7.79,2.76,0.29,0.16],borderColor:'#D97706',backgroundColor:'rgba(217,119,6,.1)',fill:true,tension:.3,pointRadius:4,borderWidth:2}],
+    {leg:true,yB:true,fmt:function(v){return v.toFixed(2)+'B IQD'}});
+
+
+  // CARD TYPES tab
+  var ctColors=['#1C2340','#D97706','#6D28D9','#059669'];
+  var ctLabels=['💳 Debit','💳 PrePaid','💳 Credit','💳 World Elite'];
+  mkC('ch-ct1','doughnut',ctLabels,
+    [{data:[78.5,20.9,0.4,0.12],backgroundColor:ctColors,borderWidth:2,borderColor:'#fff'}],
+    {cut:'55%',nosc:true,leg:true,fmt:function(v){return v+'% of clients'}});
+  mkC('ch-ct2','doughnut',ctLabels,
+    [{data:[84.9,12.1,2.0,0.99],backgroundColor:ctColors,borderWidth:2,borderColor:'#fff'}],
+    {cut:'55%',nosc:true,leg:true,fmt:function(v){return v+'% of value'}});
+  mkC('ch-ct3','bar',['💳 Debit\n1.09M IQD','💳 PrePaid\n586K IQD','💳 Credit\n5.03M IQD','💳 World Elite\n8.16M IQD'],
+    [{data:[1094,586,5030,8160],backgroundColor:ctColors,borderRadius:5}],
+    {fmt:function(v){return (v/1000).toFixed(2)+'M IQD avg per client'}});
+
+  // CARDS x SEGMENTS tab
+  var segs8=['Champions','Loyal','At Risk','Needs Attn.','Hibernating','Pot. Loyalists','New Cust.','Regular'];
+  var debPct=[75.2,77.3,77.0,80.0,79.5,80.4,85.7,84.6];
+  var prePct=[24.0,22.2,22.4,19.6,20.2,19.1,13.8,14.9];
+  var credPct=[0.51,0.47,0.39,0.34,0.29,0.45,0.40,0.43];
+  var wePct=[0.32,0.09,0.22,0.03,0.03,0.04,0.08,0.04];
+  mkC('ch-cs1','bar',segs8,[
+    {label:'Debit %',data:debPct,backgroundColor:'rgba(28,35,64,0.8)',borderRadius:3},
+    {label:'PrePaid %',data:prePct,backgroundColor:'rgba(217,119,6,0.75)',borderRadius:3},
+    {label:'Credit %',data:credPct.map(function(v){return v*5}),backgroundColor:'rgba(109,40,217,0.7)',borderRadius:3},
+    {label:'World Elite %×5',data:wePct.map(function(v){return v*5}),backgroundColor:'rgba(5,150,105,0.7)',borderRadius:3}
+  ],{leg:true,fmt:function(v){return v+'%'}});
+
+  var debVolPct=[81.0,89.4,88.7,93.8,90.7,94.9,98.5,97.7];
+  var preVolPct=[15.1,8.4,9.4,5.2,8.8,3.98,1.1,1.8];
+  var credVolPct=[2.6,1.7,1.1,0.84,0.45,0.76,0.17,0.15];
+  var weVolPct=[1.29,0.56,0.76,0.07,0.12,0.39,0.29,0.36];
+  mkC('ch-cs2','bar',segs8,[
+    {label:'Debit vol%',data:debVolPct,backgroundColor:'rgba(28,35,64,0.8)',borderRadius:3},
+    {label:'PrePaid vol%',data:preVolPct,backgroundColor:'rgba(217,119,6,0.75)',borderRadius:3},
+    {label:'Credit vol%',data:credVolPct,backgroundColor:'rgba(109,40,217,0.7)',borderRadius:3},
+    {label:'WE vol%',data:weVolPct,backgroundColor:'rgba(5,150,105,0.7)',borderRadius:3}
+  ],{leg:true,fmt:function(v){return v.toFixed(1)+'%'}});
+
+  // Full matrix table
+  var csData=[
+    ['🏆 Champions','Debit',204555,'75.2%','682.5B IQD','81.0%','3.34M IQD','Rafidain Classic dominates (65.7%) — upgrade to MC Corporate is the #1 value lever'],
+    ['🏆 Champions','PrePaid',65141,'24.0%','126.9B IQD','15.1%','1.95M IQD','ISC Travel cardholders — heavy international e-commerce and travel users'],
+    ['🏆 Champions','Credit',1375,'0.51%','22.1B IQD','2.6%','16.1M IQD','Istirad (403) + Qi Elite (98) — highest avg spend in portfolio'],
+    ['🏆 Champions','World Elite',857,'0.32%','10.9B IQD','1.3%','12.7M IQD','719 World Elite + 138 Platinum — ultra-premium, avg 12.7M IQD each'],
+    ['⚠️ At Risk','Debit',150740,'77.0%','257.0B IQD','88.7%','1.71M IQD','96,856 are Rafidain Classic — physical POS spenders who stopped'],
+    ['⚠️ At Risk','PrePaid',43896,'22.4%','27.2B IQD','9.4%','620K IQD','ISC Travel — heavy SAU/UAE cluster · 46.8% at-risk rate at SAU merchants'],
+    ['⚠️ At Risk','Credit',769,'0.39%','3.2B IQD','1.1%','4.14M IQD','221 Istirad (avg 11.4M) + 37 Qi Elite (avg 9.1M) — senior call required'],
+    ['⚠️ At Risk','World Elite',433,'0.22%','2.2B IQD','0.76%','5.06M IQD','379 World Elite at-risk · avg 5.5M IQD each · ~2.1B IQD dormant'],
+    ['💛 Loyal','Debit',205051,'77.3%','224.9B IQD','89.4%','1.10M IQD','100,575 on Rafidain Classic (avg 676K) — prime card upgrade targets'],
+    ['💛 Loyal','PrePaid',58873,'22.2%','21.2B IQD','8.4%','360K IQD','ISC Travel holders in Loyal — less travel-heavy than Champions'],
+    ['💛 Loyal','Credit',1257,'0.47%','4.2B IQD','1.7%','3.33M IQD','Istirad (254) + Qi Elite (76) — close to Champions, upgrade-ready'],
+    ['💛 Loyal','World Elite',250,'0.09%','1.4B IQD','0.56%','5.64M IQD','210 World Elite in Loyal — should be in Champion tier soon'],
+    ['👀 Needs Attn.','Debit',165019,'80.0%','34.6B IQD','93.8%','210K IQD','Almost all on Rafidain Classic — salary-cycle debit users'],
+    ['👀 Needs Attn.','PrePaid',40530,'19.6%','1.9B IQD','5.2%','47.6K IQD','ISC Travel in Needs Attn. — lower spend, travel card holders who are infrequent'],
+    ['🌱 Pot. Loyalists','Debit',107010,'80.4%','19.9B IQD','94.9%','186K IQD','85%+ on Rafidain Classic — digital users, e-commerce frequency target'],
+    ['🌱 Pot. Loyalists','PrePaid',25431,'19.1%','834M IQD','3.98%','32.8K IQD','ISC Travel holders with low PrePaid spend — not heavy travelers'],
+    ['😴 Hibernating','Debit',230730,'79.5%','22.2B IQD','90.7%','96.3K IQD','57.5% of these made 1 transaction only — failed onboardings on Rafidain Classic'],
+    ['😴 Hibernating','PrePaid',58543,'20.2%','2.1B IQD','8.8%','36.7K IQD','ISC Travel in Hibernating — possibly travel card holders who traveled once'],
+    ['🆕 New Cust.','Debit',45816,'85.7%','14.9B IQD','98.5%','325K IQD','86.9% made 1 transaction — onboarding failures mostly on Rafidain Classic'],
+    ['🆕 New Cust.','PrePaid',7360,'13.8%','163M IQD','1.1%','22.1K IQD','ISC Travel new users — lower first spend than Debit new customers'],
+    ['🔵 Regular','Debit',47819,'84.6%','8.9B IQD','97.7%','187K IQD','88.2% made 1–2 transactions — digital Rafidain Classic users'],
+    ['🔵 Regular','PrePaid',8418,'14.9%','164M IQD','1.8%','19.5K IQD','ISC Travel regulars — low avg spend, infrequent']
+  ];
+  var cst=document.getElementById('cs-tbl');
+  if(cst){csData.forEach(function(r){
+    var sc=r[0].includes('Champion')?'#6D28D9':r[0].includes('At Risk')?'#DC2626':r[0].includes('Loyal')?'#059669':r[0].includes('Needs')?'#EA580C':r[0].includes('Hib')?'#D97706':r[0].includes('Pot')?'#0891B2':r[0].includes('New')?'#0369A1':'#1D4ED8';
+    var tc=r[1]==='Debit'?'#1C2340':r[1]==='PrePaid'?'#D97706':r[1]==='Credit'?'#6D28D9':'#059669';
+    cst.innerHTML+='<tr><td style="font-weight:700;color:'+sc+'">'+r[0]+'</td><td><span style="font-weight:700;color:'+tc+'">'+r[1]+'</span></td><td>'+parseInt(r[2]).toLocaleString()+'</td><td style="font-weight:700">'+r[3]+'</td><td>'+r[4]+'</td><td>'+r[5]+'</td><td style="font-weight:700;color:'+tc+'">'+r[6]+'</td><td style="font-size:10px;color:var(--mt)">'+r[7]+'</td></tr>';
+  });}
+
+  // Credit + WE by segment
+  mkC('ch-cs3','bar',segs8,
+    [{label:'Credit clients',data:[1375,1257,769,695,843,594,212,244],backgroundColor:'rgba(109,40,217,0.7)',borderRadius:3},
+     {label:'World Elite clients',data:[857,250,433,56,81,59,44,25],backgroundColor:'rgba(5,150,105,0.7)',borderRadius:3}],
+    {leg:true,fmt:function(v){return v.toLocaleString()+' premium clients'}});
+
+  // PrePaid by segment
+  mkC('ch-cs4','bar',segs8,
+    [{data:[65141,58873,43896,40530,58543,25431,7360,8418],
+      backgroundColor:['#D97706','#D97706cc','#DC2626','#EA580C','#6B7280','#0891B2','#0369A1','#1D4ED8'],borderRadius:4}],
+    {fmt:function(v){return v.toLocaleString()+' PrePaid clients'}});
+
+  // Rafidain Classic by segment (debit upgrade opportunity)
+  mkC('ch-cs5','bar',segs8,
+    [
+      {label:'Rafidain Classic clients',data:[134266,100575,96856,103900,130000,55000,39000,40500],backgroundColor:'rgba(28,35,64,0.65)',borderRadius:3},
+      {label:'Avg spend K IQD',data:[2850,676,1467,211,97,186,325,163],backgroundColor:'rgba(243,205,0,0.75)',borderRadius:3}
+    ],{leg:true,fmt:function(v){return v.toLocaleString()}});
+
+  // OUTCOMES tab
+  var od=[
+    ['Champions retention','💎 Premium','271,682','90–95%','2,000','~800B retained','>1,400x','P0','#6D28D9'],
+    ['At Risk — 637 Premium clients','🥇 Growth','637','50–70%','Personal call','+5.1B recovered','∞','P0','#DC2626'],
+    ['At Risk — Score 155','🥇 Growth','10,002','30–40%','3,500','+8–10.7B IQD','245x','P0','#DC2626'],
+    ['Loyal → Champion upsell','🥇 Growth','265,377','15–20%','1,500','+123B–164B IQD','308x','P0','#059669'],
+    ['At Risk — Bulk recovery','🥇 Growth','185,147','25–35%','2,500','+68–96B IQD','157x','P1','#DC2626'],
+    ['Needs Attention retention','🥇 Growth','206,288','45–55%','800','+16.6B protected','101x','P1','#EA580C'],
+    ['Pot. Loyalists → Loyal','🥇 Growth','133,089','20–30%','1,200','+25.3B–37.9B','158x','P1','#0891B2'],
+    ['New Customers onboarding','🥈 Activation','53,431','55–65%','800','+8.2–9.9B IQD','232x','P2','#0369A1'],
+    ['Regular → Pot. Loyalists','🥈 Activation','56,506','25–35%','500','+2.4–3.4B IQD','96x','P2','#1D4ED8'],
+    ['Hibernating 3+ recovery','🥈 Activation','63,572','20–30%','500–1,500','+2.5–4.4B IQD','51x','P3','#D97706'],
+    ['Hibernating 1-txn survey','Survey Only','166,888','Survey only','50','Product intel','Data','P4','#94A3B8']
+  ];
+  var ot=document.getElementById('out-tbl');
+  if(ot){od.forEach(function(r,i){
+    var pc=r[7]==='P0'?'#DC2626':r[7]==='P1'?'#D97706':r[7]==='P2'?'#059669':r[7]==='P3'?'#1D4ED8':'#94A3B8';
+    ot.innerHTML+='<tr><td style="color:var(--mt);font-size:10px">'+(i+1)+'</td><td style="font-weight:700;color:'+r[8]+'">'+r[0]+'</td><td style="font-size:10px">'+r[1]+'</td><td>'+r[2]+'</td>'
+      +'<td><div style="display:flex;align-items:center;gap:4px"><div class="pbar"><div class="pbf" style="width:'+Math.min(parseInt(r[3]),100)+'%;background:'+r[8]+'"></div></div>'+r[3]+'</div></td>'
+      +'<td style="font-size:10px;color:var(--mt)">'+r[4]+' IQD</td><td style="font-weight:700;color:#059669">'+r[5]+'</td>'
+      +'<td style="font-weight:800;color:'+r[8]+'">'+r[6]+'</td>'
+      +'<td><span style="font-size:10px;font-weight:700;background:'+pc+'22;color:'+pc+';padding:2px 8px;border-radius:20px;border:1px solid '+pc+'44">'+r[7]+'</span></td></tr>';
+  });}
+
+  mkC('ch-out1','bar',['💎 Premium\n(retain 842B)','🥇 Growth\n(recover+upgrade)','🥈 Activation\n(onboard+reactivate)'],
+    [{data:[800,290,13],backgroundColor:['#6D28D9','#D97706','#94A3B8'],borderRadius:5}],
+    {yB:true,fmt:function(v){return v+'B IQD'}});
+
+  mkC('ch-out2','bar',['💎 Premium','🥇 Growth','🥈 Activation'],
+    [
+      {label:'Budget (B IQD)',data:[0.543,1.88,0.1],backgroundColor:'rgba(220,38,38,.6)',borderRadius:3},
+      {label:'Impact (B IQD, scaled÷10)',data:[80,29,1.3],backgroundColor:'rgba(5,150,105,.6)',borderRadius:3}
+    ],{leg:true,yB:true,fmt:function(v){return v+'B IQD'}});
+};
+</script>
+</body>
+</html>
