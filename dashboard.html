@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qi Card Analytics — Secure Report Hub</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #F5F6FA 0%, #E8EEF9 100%);
+            color: #1A1A1A;
+            min-height: 100vh;
+        }
+        .topbar {
+            background: #1C2340;
+            color: white;
+            padding: 18px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+        }
+        .brand-badge {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #F3CD00, #E8C000);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1C2340;
+            font-size: 18px;
+        }
+        .logout-btn {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fff;
+            border-radius: 8px;
+            padding: 8px 14px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+        .main {
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 32px 20px 60px;
+        }
+        .header {
+            margin-bottom: 26px;
+        }
+        .header h1 {
+            font-size: 30px;
+            margin-bottom: 8px;
+            color: #1C2340;
+        }
+        .header p {
+            font-size: 14px;
+            color: #6B7280;
+        }
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: white;
+            border: 1px solid #E4E7EF;
+            border-radius: 14px;
+            padding: 22px 18px;
+            box-shadow: 0 5px 18px rgba(28,35,64,0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .card-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #1C2340;
+        }
+        .report-tag {
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .5px;
+            text-transform: uppercase;
+            border: 1px solid;
+            white-space: nowrap;
+        }
+        .tag-live { background: #ECFDF5; border-color: #A7F3D0; color: #065F46; }
+        .tag-private { background: #F5F3FF; border-color: #C4B5FD; color: #4C1D95; }
+        .desc {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #4B5563;
+        }
+        .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .meta-badge {
+            font-size: 11px;
+            background: #F5F6FA;
+            color: #475569;
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid #E4E7EF;
+            font-weight: 600;
+        }
+        .actions {
+            margin-top: auto;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .btn-primary {
+            background: #1C2340;
+            color: white;
+        }
+        .btn-secondary {
+            background: #F5F6FA;
+            color: #1C2340;
+            border: 1px solid #E4E7EF;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+        .footer-note {
+            margin-top: 28px;
+            background: #fff;
+            border: 1px solid #E4E7EF;
+            border-radius: 12px;
+            padding: 18px;
+            color: #475569;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+        .footer-note strong {
+            color: #1C2340;
+        }
+        @media (max-width: 640px) {
+            .topbar {
+                padding: 16px 18px;
+            }
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div class="brand">
+            <div class="brand-badge">🔐</div>
+            <span>Qi Card Analytics</span>
+        </div>
+        <button class="logout-btn" id="logoutBtn">Log out</button>
+    </div>
+
+    <div class="main">
+        <div class="header">
+            <h1>Secure Report Hub</h1>
+            <p>Private dashboard access for internal Qi Card strategy reports.</p>
+        </div>
+
+        <div class="cards" id="reportsList">
+            <div class="card">
+                <div class="card-top">
+                    <div class="card-title">Marketing & Revenue Strategy</div>
+                    <span class="report-tag tag-private">Private</span>
+                </div>
+                <div class="desc">
+                    Revenue map, margin levers, premium growth strategies, activation plan, and execution roadmap.
+                </div>
+                <div class="meta">
+                    <span class="meta-badge">HTML</span>
+                    <span class="meta-badge">Internal Use</span>
+                    <span class="meta-badge">1.490T IQD</span>
+                </div>
+                <div class="actions">
+                    <a class="btn btn-primary" href="https://github.com/raedkawkab-cpu/qi-card-analytics/blob/main/qi_card_marketing_mobile.html" target="_blank" rel="noopener">Open Report</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-top">
+                    <div class="card-title">Client Segmentation Strategy v2</div>
+                    <span class="report-tag tag-private">Private</span>
+                </div>
+                <div class="desc">
+                    Pareto-correct premium segmentation, account-level usage, merchant case studies, and product-tier analysis.
+                </div>
+                <div class="meta">
+                    <span class="meta-badge">HTML</span>
+                    <span class="meta-badge">Segmentation</span>
+                    <span class="meta-badge">1,472,352 clients</span>
+                </div>
+                <div class="actions">
+                    <a class="btn btn-primary" href="https://github.com/raedkawkab-cpu/qi-card-analytics/blob/main/qi_card_segmentation_v2%20(1).html" target="_blank" rel="noopener">Open Report</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            <strong>Access policy:</strong> reports are restricted to approved internal users only. If a password is shared externally or a link is exposed publicly, the master password should be rotated immediately.
+        </div>
+    </div>
+
+    <script>
+        const AUTH_KEY = 'qi-card-auth-session';
+
+        function isSessionValid() {
+            const raw = localStorage.getItem(AUTH_KEY);
+            if (!raw) return false;
+
+            try {
+                const session = JSON.parse(raw);
+                const now = Date.now();
+                const timeout = 30 * 60 * 1000;
+
+                if (!session.authenticated || !session.timestamp) return false;
+                if ((now - session.timestamp) > timeout) {
+                    localStorage.removeItem(AUTH_KEY);
+                    return false;
+                }
+                return true;
+            } catch {
+                return false;
+            }
+        }
+
+        if (!isSessionValid()) {
+            window.location.href = 'index.html';
+        }
+
+        document.getElementById('logoutBtn').addEventListener('click', function () {
+            localStorage.removeItem(AUTH_KEY);
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>
